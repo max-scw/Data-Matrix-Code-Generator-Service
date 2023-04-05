@@ -130,12 +130,12 @@ class FormatParser:
         # extract meta data from mapping
         meta_data = self.di_mapping[di]["Meta Data"]
         if meta_data != "":
-            valid_code |= validate_format(meta_data, di + text, self.strict)
+            valid_code = valid_code and validate_format(meta_data, di + text, self.strict)
         else:
             # allow printable ascii characters (33, 126)
-            valid_code |= True if re.match(r"[ -~]+$", text) else False
+            valid_code = valid_code and (True if re.match(r"[ -~]+$", text) else False)
 
-        if cast:
+        if cast and valid_code:
             text = self._cast_text(di, text)
         return valid_code, text
 
@@ -202,7 +202,8 @@ class FormatParser:
                 text = str(m.string[m.end():])
                 # check if the text meets the specified format
                 valid_code_id, text = self.check_text(di, text, cast=cast)
-                valid_code_overall |= valid_code_id
+                # update overall flag for valid code
+                valid_code_overall = valid_code_overall and valid_code_id
                 # info.append((di, text, valid_code_id))
                 info.append({"data_identifier": di, "content": text, "code_valid": valid_code_id})
             else:
@@ -306,8 +307,9 @@ if __name__ == "__main__":
 
     # input
     di_format_in = "ANSI-MH-10"
-    fields_in = tmp[di_format_in]
+    fields_in = tmp[di_format_in] + ["D_____________________________________"]
 
     segments, flag_valid = FormatParser(di_format_in, fields_in, strict=False, verbose=True).parse(True)
+    print(segments)
 
 
