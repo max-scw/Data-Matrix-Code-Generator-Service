@@ -21,10 +21,8 @@ def clear_fields():
     del st.session_state.fields
 
 
-def create_new_row() -> Dict[str, Union[str, int]]:
-    return {"di": list(FORMAT_MAPPING.keys())[0], "content": "", "keys": [create_unique_key() for _ in range(2)]}
-
-
+def create_new_row(di: str = "") -> Dict[str, Union[str, int]]:
+    return {"di": di, "content": "", "keys": [create_unique_key() for _ in range(3)]}
 
 
 def draw_input_rows():
@@ -34,18 +32,21 @@ def draw_input_rows():
 
     # draw row(s)
     for i, fld in enumerate(st.session_state.fields):
+        placeholder = st.empty()
         col1, buff, col2 = st.columns([1, 1, 4])
         with col1:
-            fld["di"] = st.selectbox("Data Identifier", DMCMessageBuilder().data_identifiers, key=fld["keys"][0],
-                                     # on_change=hm.update(fld["di"]),
-                                     # help=hm.message
-                                     ) # FIXME: update help message on_change
+            di = st.selectbox("Data Identifier", DMCMessageBuilder().data_identifiers, key=fld["keys"][0],
+                              # on_change=,
+                              )
+            print(f"DEBUG: di={di}")
+            draw_info(di if di != fld["di"] else None, placeholder)
+            fld["di"] = di
 
         with col2:
             fld["content"] = st.text_input("Content", key=fld["keys"][1])  # placeholder=fld["content"],
 
             # TODO: check code on change
-            di = fld["di"]
+            # di = fld["di"]
             value = fld["content"]
             if value:
                 segments, flag_valid = FormatParser(DI_FORMAT, [di + value],
@@ -54,6 +55,10 @@ def draw_input_rows():
                     st.warning(f"The value '{value}' for data identifier '{di}' does not comply with the format "
                                f"specifications: {FORMAT_MAPPING[di]['Meta Data']}.", icon="⚠️")
 
+def draw_info(di: str, placeholder):
+    if di:
+        with placeholder:
+            st.info(FORMAT_MAPPING[di]["Explanation"], icon="ℹ️")
 
 def add_new_row():
     print(f"DEBUG: st.session_state.fields={st.session_state.fields}")
