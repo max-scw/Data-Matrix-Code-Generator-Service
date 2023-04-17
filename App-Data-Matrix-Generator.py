@@ -1,16 +1,23 @@
-from datetime import datetime
-
 import streamlit as st
 import uuid
 import binascii
 
-from typing import Dict, Union
+from typing import Dict, Union, List
 
 from DMCGenerator import DMCGenerator
 from DMCText import DMCMessageBuilder, FormatParser, DATA_IDENTIFIERS
 
 DI_FORMAT = "ANSI-MH-10"
 FORMAT_MAPPING = DATA_IDENTIFIERS[DI_FORMAT]["mapping"]
+
+
+def rstrip_non_ascii_characters(text: str) -> str:
+    i = 0
+    for el in text[::-1]:
+        if el.isascii():
+            break
+        i += 1
+    return text[:-i] if i > 0 else text
 
 
 def create_unique_key():
@@ -22,7 +29,7 @@ def clear_fields():
 
 
 def create_new_row(di: str = "") -> Dict[str, Union[str, int]]:
-    return {"di": di, "content": "", "keys": [create_unique_key() for _ in range(3)]}
+    return {"di": di, "content": "", "keys": [create_unique_key() for _ in range(2)]}
 
 
 def draw_input_rows():
@@ -35,38 +42,48 @@ def draw_input_rows():
         placeholder = st.empty()
         col1, buff, col2 = st.columns([1, 1, 4])
         with col1:
-            di = st.selectbox("Data Identifier", DMCMessageBuilder().data_identifiers, key=fld["keys"][0],
-                              # on_change=,
-                              )
-            print(f"DEBUG: di={di}")
-            draw_info(di if di != fld["di"] else None, placeholder)
+            di = st.selectbox("Data Identifier", DMCMessageBuilder().data_identifiers, key=fld["keys"][0])
+            # draw info message on change
+            if st.session_state.explain_data_identifiers:
+                draw_info(di if di != fld["di"] and fld["di"] != "" else None, placeholder)
             fld["di"] = di
 
         with col2:
-            fld["content"] = st.text_input("Content", key=fld["keys"][1])  # placeholder=fld["content"],
+            content = st.text_input("Content", key=fld["keys"][1])
+            # strip unexpected non-ascii characters at the end and tailing spaces
+            content = rstrip_non_ascii_characters(content).rstrip(" ")
+            print(f"DEBUG: content={content}")
+            fld["content"] = content
 
-            # TODO: check code on change
-            # di = fld["di"]
-            value = fld["content"]
-            if value:
-                segments, flag_valid = FormatParser(DI_FORMAT, [di + value],
+            # check code on change
+            if content:
+                segments, flag_valid = FormatParser(DI_FORMAT, [di + content],
                                                     strict=False, verbose=False).parse()
                 if not flag_valid:
-                    st.warning(f"The value '{value}' for data identifier '{di}' does not comply with the format "
+                    st.warning(f"The value '{content}' for data identifier '{di}' does not comply with the format "
                                f"specifications: {FORMAT_MAPPING[di]['Meta Data']}.", icon="⚠️")
+
 
 def draw_info(di: str, placeholder):
     if di:
         with placeholder:
-            st.info(FORMAT_MAPPING[di]["Explanation"], icon="ℹ️")
+            st.info(f"**{di}**: {FORMAT_MAPPING[di]['Explanation']}", icon="ℹ️")
 
-def add_new_row():
-    print(f"DEBUG: st.session_state.fields={st.session_state.fields}")
+
+def get_rows() -> List[Dict[str, Union[str, int]]]:
+    # print(f"DEBUG: st.session_state.fields={st.session_state.fields}")
+
     # delete empty rows
     st.session_state.fields = [fld for fld in st.session_state.fields if fld["content"] != ""]
+    print(f"DEBUG: st.session_state.fields={st.session_state.fields} (cleaned for empty rows)")
+    return st.session_state.fields
 
+
+def add_new_row():
+    rows = get_rows()
+    # check format of all characters
     flag_add_new_row = True
-    data_identifiers = [row["di"] for row in st.session_state.fields]
+    data_identifiers = [fld["di"] for fld in rows]
     for di in list(set(data_identifiers)):  # convert to set to get a unique list
         if data_identifiers.count(di) > 1:
             st.error(f"The data identifier '{di}' is already defined.", icon="🚨")  # chr(int("U+1F6A8"[2:], 16))
@@ -78,7 +95,7 @@ def add_new_row():
         st.experimental_rerun()
 
 
-def draw_options():
+def initialize_options():
     # default values
     if "use_message_envelope" not in st.session_state:
         st.session_state.use_message_envelope = True
@@ -95,6 +112,11 @@ def draw_options():
     if "options_expanded" not in st.session_state:
         st.session_state.options_expanded = False
 
+    if "explain_data_identifiers" not in st.session_state:
+        st.session_state.explain_data_identifiers = True
+
+
+def draw_options():
     # options container
     with st.expander("Options", expanded=st.session_state.options_expanded):
         columns = st.columns([1, 1], gap="large")
@@ -110,6 +132,12 @@ def draw_options():
                                                                key=None,
                                                                help=None
                                                                )
+            st.markdown("*App options*")
+            st.session_state.explain_data_identifiers = st.checkbox("explain Data Identifiers",
+                                                                    value=st.session_state.explain_data_identifiers,
+                                                                    key=None,
+                                                                    help="Shows info message when drop-down menu for *Data Identifier* changes."
+                                                                    )
         with columns[1]:
             st.markdown("*Data-Matrix-Code generator options*")
             st.session_state.use_rectangular = st.checkbox("rectangular DMC",
@@ -130,6 +158,8 @@ def main():
     st.set_page_config(page_title="DMC Generator", page_icon="💡")  #  chr(int(" U+1F4A1"[2:], 16)) # https://emojipedia.org/  chr(int("U+1F6A8"[2:], 16))
     st.title("Data-Matrix-Code Service")
 
+    initialize_options()
+
     draw_input_rows()
 
     # add buttons
@@ -146,16 +176,17 @@ def main():
         add_new_row()
 
     draw_options()
-    # placeholder = st.empty()
-
-    message_fields = {fld["di"]: fld["content"] for fld in st.session_state.fields}
-    message_string = DMCMessageBuilder(message_fields, DI_FORMAT).get_message_string(
-        use_message_envelope=st.session_state.use_message_envelope,
-        use_format_envelope=st.session_state.use_format_envelope
-    )
 
     if generate_dmc:
         with st.spinner(text="generating Data-Matrix-Code ..."):
+            rows = get_rows()
+
+            message_fields = {fld["di"]: fld["content"] for fld in rows}
+            message_string = DMCMessageBuilder(message_fields, DI_FORMAT).get_message_string(
+                use_message_envelope=st.session_state.use_message_envelope,
+                use_format_envelope=st.session_state.use_format_envelope
+            )
+
             dmc_generator = DMCGenerator(message_string)
             img = dmc_generator.generate(
                 n_quiet_zone_moduls=st.session_state.n_quiet_zone_moduls,
