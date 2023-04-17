@@ -1,0 +1,385 @@
+META DATA;DI;EXPLANATION
+;B;Container Type (internally assigned or mutually defined).
+;1B;Returnable Container Identification Code assigned by the container owner or the appropriate regulatory agency (e.g., a metal tub, basket, reel, unit load device (ULD), trailer, tank, or intermodal container) (excludes gas cylinders See "2B").
+;2B;Gas Cylinder Container Identification Code assigned by the manufacturer in conformance with U.S. Department of Transportation (D.O.T.) standards.
+;3B;Motor Freight Transport Equipment Identification Code assigned by the manufacturer in conformance with International Organization for Standardization (ISO) standards.
+;4B;Standard Carrier Alpha Code (SCAC) (4 alphanumeric characters) and an optional carrier assigned trailer number (one to ten alphanumeric characters). When used, the carrier assigned trailer number is separated from the SCAC by a dash "-".
+an2+an1...35;5B;Receptacle Asset Number -- Consisting of two joined parts: A) Identification of an organization in accordance with ISO/IEC 15459 and a unique entity identification assigned in accordance with rules established by the issuing agency. B) A unique serial number assigned by the entity, ending with a 3-character container type code taken from EDIFACT Code List 8053 or UPU standard M82-3. (If the container type code listed is less than three characters in length, the field will be dash "-" filled left to the length of three characters).
+an2+an11;7B;Container Serial Number. According to ISO 6346. OC EI CSN CD, where the OC is the three letter owner code assigned in cooperation with BIC, the EI is the one letter equipment category identifier, the CSN is a 6-digit unique container identification assigned by the equipment owner, and CD is a modulus 11 check digit calculated in accordance with Annex A, ISO 6346.
+an2+an3;8B;Identification of a Returnable Container owner assigned in cooperation with BIC.
+an2+an4;9B;Container Size/Type Code. According to ISO 6346, §4.2.
+an3+an4;10B;Container Ownership Code. Actual four-character abbreviation marked on the container by the owner. For DOD owned containers see Defense Transportation Regulation App EE-6.
+;11B;Van Number (complete number minus check digit).
+;12B;Check digit of Van Number identified in 11B.
+;13B;Container Number Code (last 5 digits of number not counting check digit).
+an3+a1;14B;Tag Status: Y=Authorized / N=Unauthorized
+an3+an1...4;15B;Dangerous Cargo Class. IMDG Class in the format "n.na" where n = numeric, decimal point expressly encoded, and a = conditional alphabetic qualifier. http://docs.imo.org/
+an3+an4;16B;UN Code for Dangerous Goods. For dangerous cargo provided by shipper in accordance with UN Code. www.unece.org/trans/danger/publi/unrec/English/part3.pdf
+an3+an1...35;17B;Name Of Transportation Subject. Vessel name or vehicle code/train trip number in English.
+an3+an3+n7;18B;Vessel Registration Number. The three letters "IMO" followed by the seven-digit number assigned to all ships by IHS Fairplay when constructed. http://www.imonumbers.lrfairplay.com/
+an3+an18;19B;Voyage number/Trip number. Letter and number.
+an3+an2;20B;Vessel Country. ISO 3166-1 Alpha 2 Code.
+an3+6;21B;Reserved for Electronic Seal Numbers. Comprised of the 18185-1 seal tag ID - 32 bits and the ISO 14816 16-bit manufacturers ID (ISO 646).
+an3+an11+n2;22B;Entry Number/Type. Comprised of the three-digit filer code, followed by the seven-digit entry number, and completed with the one digit check digit. Entry Filer Code represents the three-character alphanumeric filer code assigned to the filer or importer by CBP. Entry Number represents the seven-digit number assigned by the filer. The number may be assigned in any manner convenient, provided that the same number is not assigned to more than one CBP Form 7501. Leading zeros must be shown. Check Digit is computed on the previous 10 characters. The formula for calculating the check digit can be found in Appendix 1, CBP 7501 Instructions. Entry type is a two-digit code compliant to Block 2, CBP 7501 Instructions.
+an3+n3;23B;Surety Number. The three-digit numeric code that identifies the surety company on the Customs Bond. This code can be found in block 7 of the CBP Form 301, or is available through CBP's automated system to ABI filers, via the importer bond query transaction. For U.S. Government importations and entry types not requiring surety, code 999 should appear in this block. When cash or Government securities are used in lieu of surety, use code 998.
+an3+n5;24B;Foreign Port of Lading. "Schedule K" (Classification of Foreign Ports by Geographic Trade Area and Country) for the foreign port at which the merchandise was actually laden on the vessel that carried the merchandise to the U.S. http://www.navigationdatacenter.us/wcsc/scheduleK/schedulek.htm
+an3+an1...35;25B;Identification of a Party to a Transaction as defined in ISO 17364, assigned by a holder of a Company Identification Number (CIN) and including the related Issuing Agency Code (IAC) in accordance with ISO/IEC 15459 and its registry, structured as a sequence of 3 concatenated data elements: IAC, followed by CIN, followed by the RTI serial number that is unique within the CIN holder's domain.
+;26B;Unique Returnable Transport Item Identifier comprised of a sequence of 5 data elements: "IAC", followed by "CIN", followed by "RTI Number" (RTIN), followed by the "+" character, followed by the supplier assigned (or managed) "RTI Serial Number" (RTISN) that is globally unique within the CIN holder's domain, in the format IAC CIN RTIN + RTISN (spaces added for visual clarity only, they are not part of the data). See Annex C.11.
+an3+an20...50;27B;Globally Unique Asset Identifier of a Large Load Carrier (LLC) Returnable Transport Item (RTI) with a side base of ≥ 1000 mm, as defined in ISO 17365:2013, tertiary packaging, layer 3 comprised of a sequence of 5 data elements: "IAC", followed by "CIN", followed by RTI Type Code "RTITC", followed by the "+" character, followed by the owner assigned (or managed) RTI Serial Number "RTISN" that is globally unique within the CIN holder´s domain in the format IAC CIN RTITC + RTISN (spaces added for visual clarity only, they are not part of the data).
+an3+an20...50;28B;Globally Unique Asset Identifier of a Small Load Carrier (SLC) Returnable Transport Item with a side base of < 1000 mm, as defined in ISO 17364:2013 (RTI), tertiary packaging, layer 2 comprised of a sequence of 5 data elements: "IAC", followed by "CIN", followed by RTI Type Code "RTITC", followed by the "+" character, followed by the owner assigned (or managed) RTI Serial Number "RTISN" that is globally unique within the CIN holder´s domain in the format IAC CIN RTITC + RTISN (spaces added for visual clarity only, they are not part of the data).
+an3+an1...50;29B;Globally Unique Returnable Packaging Item (RPI) identifier of the category packaging aid (lid, blister, inlay, ...) comprised of a sequence of 5 data elements: "IAC", followed by "CIN", followed by "RPI Number" RPIN, followed by the "+" character, followed by the owner assigned (or managed) "RPI Serial Number" RPISN that is globally unique within the CIN holder´s domain in the format IAC CIN RPIN + RPISN (spaces added for visual clarity only, they are not part of the data).
+an3+an2...35;30B;Packaging Item Number. Number to identify the type of packaging item (material) used when packing products and packages. The number will enable packaging item (material) be identified and separated from products, packages, Returnable Transport Items (RTIs) and Returnable Packaging Items (RPIs) during packing. The number is constructed as a sequence of minimum 1 data element: Packaging item (material) number that is unique within the holder's domain.
+an3+an6...35;31B;Global Unique Packaging Number. Global unique number to identify the type of packaging item (material) used when packing products and packages. The global unique number will enable packaging items (materials) be identified and separated from products, packages, Returnable Transport Items (RTIs) and Returnable Packaging Items (RPIs) during packing. The number is constructed as a sequence of 3 concatenated data elements: The IAC, followed by the CIN, followed by the Packaging item (material) number that is unique within the CIN holder's domain.
+an3+an1...50;55B;Global Unique Returnable Packaging Item (RPI) as defined in ISO 17364, assigned by a holder of a Company Identification Number (CIN) and including the related Issuing Agency Code (IAC) in accordance with ISO/IEC 15459 and its registry, structured as a sequence of 3 concatenated data elements: IAC, followed by CIN, followed by the RPI serial number that is unique within the CIN holder's domain.
+;C;Continuation of an Item Code (Category 16) assigned by Customer that is too long for a required field size.
+;1C;Continuation of Traceability Code (Category 20) assigned by Supplier.
+;2C;Continuation of Serial Number (Category 19) assigned by Supplier.
+;3C;Continuation of Free Text (Category 26) mutually defined between Supplier/Carrier/Customer.
+;4C;Continuation of Transaction Reference (Category 11) mutually defined between Supplier/Carrier/Customer.
+;5C;Continuation of Item Code (Category 16) Assigned by Supplier.
+an1+n6;D;Format YYMMDD.
+an2+n6;1D;Format DDMMYY.
+an2+n6;2D;Format MMDDYY.
+an2+n4;3D;Format YDDD (Julian).
+an2+n5;4D;Format YYDDD (Julian).
+an2+n6+an3;5D;ISO format YYMMDD, immediately followed by an ANSI X12.3 Data Element Number 374 Qualifier providing a code specifying type of date (e.g., ship date, manufacture date).
+an2+n8+an3;6D;ISO format YYYYMMDD, immediately followed by an ANSI X12.3 Data Element Number 374 Qualifier providing a code specifying type of date (e.g., ship date, manufacture date).
+an2+n4;7D;Format MMYY.
+an2+n14...15;8D;Event, Date, And Time. ISO format YYYYMMDDHHMM (24 hour clock - UTC) immediately followed by a UN/EDIFACT Code Qualifier 2005 providing a code specifying type of date).
+;9D;Date (structure and significance mutually defined).
+an3+n4;10D;Format YYWW.
+an3+n6;11D;Format YYYYWW.
+an3+n8;12D;Format YYYYMMDD.
+an3+n8;13D;Oldest and Newest Manufacturing Date in the format YYWWYYWW.
+an3+n8;14D;Expiration Date (YYYYMMDD).
+an3+n8;15D;Expiration Date (DDMMYYYY).
+an3+n8;16D;Production Date (YYYYMMDD) -- Date of manufacture.
+an3+n8;17D;Production Date (DDMMYYYY).
+an3+n12;18D;Tag Activation Time. YYYYMMDDHHMM (24 hour clock - UTC).
+an3+n12;19D;Tag Deactivation Time. YYYYMMDDHHMM (24 hour clock - UTC).
+an3+n8;20D;Inspection Date (DDMMYYYY).
+;21D;Required Delivery Date (DDD Julian) or DOD MILSTAMP Code.
+an3+n12;22D;Record Time. YYYYMMDDHHMM (24 hour clock - UTC).
+;23D;Date, represented in modified UTC compliant form: yyyy[mm[dd[hh[mm[ss[fff]]]]]][poooo] where square brackets indicate optionality and yyyy is the year, mmdd the month and day, hhmmss the time of day in hours minutes and seconds, fff the fractions of sections and poooo the offset from UTC expressed in hours and minutes, the offset being positive if p is a point (.), negative if P is a minus sign (-).
+;24D;Qualified Date, comprising the concatenation of: A) an ISO/IEC 15459 issuing agency code. B) a date qualifier conforming to the specifications of that issuing agency. C) a date whose format and interpretation comply with the specifications of the issuing agency for that date qualifier.
+an3+n8;25D;Best before date: (YYYYMMDD). Example: 25D20170202 = February 2, 2017
+an3+n8;26D;First freeze date (YYYYMMDD). The first freeze date is defined as the date on which products are frozen directly after slaughtering, harvesting, catching or after initial processing. Example: 26D20170721 = July 21, 2017
+an3+n8;27D;Harvest date (YYYYMMDD). The date when an animal was slaughtered or killed, a fish has been harvested, or a crop was harvested. Example: 27D20170615 = June 15, 2017
+an3+n16;28D;Harvest date range (YYYYMMDDYYYYMMDD). The start date and end date range over which harvesting occurred.
+an1+a2;E;Restricted Substances Classification -- "Environmental Classification Code" including Lead-Free (Pb-Free) finish categories defined in JESD97 (IPC JEDEC J-STD-609), and future industry or governmental agency assigned codes related to environmental regulatory compliance and hazardous material content.
+;1E;Air Pressure -- (altitude) expressed in Pascal's as the standard international measure.
+an2+n1...4;2E;Maximum Allowed Temperature. Maximum permitted temperature. Degrees Celsius, "-" (minus) encoded, if required.
+an2+n1...4;3E;Minimum Allowed Temperature. Minimum permitted temperature. Degrees Celsius, "-" (minus) encoded, if required.
+an2+n1...2;4E;Maximum Allowed Relative Humidity. Maximum permitted relative humidity, implied as percent.
+an2+n1...2;5E;Minimum Allowed Relative Humidity. Maximum permitted relative humidity, expressed as percent.
+an2+n1...4;6E;Refrigerator Container Temperature. For temperature-controlled cargo, target specified by shipper, Degrees Celsius, "-" (minus) encoded, if required.
+;10E;Cumulative Time Temperature Index -- expressed as the number of measurements or counts.
+;11E;Time Temperature Index -- Next Higher Assembly -- expressed as the number of measurements or counts.
+an3+an9...15;12E;Declaration of Packaging Material Category*, Code* and Weight for a given packaging material used in a given packaging according to the EU packaging and packaging waste directive. (Material category and code defined in Annex M).
+;F;Looping Header as defined as Section VI of this document.
+;1F;My "parent" is . . . Unique identifier followed by a Data Identifier and associated data (for use with returnable packaging -- See Annex L). This Data Identifier must immediately follow the field (constructed of a Data Identifier, data and a group separator) with which it is associated.
+;3F;I have ______ children . . . (for use with returnable packaging, e.g. 3F10, for ten children -- See Annex L). This Data Identifier must immediately follow the field (constructed of a Data Identifier, data and a group separator) with which it is associated.
+;4F;Logical Assignment of a Page of Information within a group of pages that are spread across several data carriers, structured as a sequence of up to three (3) concatenated data elements, separated by a slash ( / ): Page number (required), followed by page count (optional, required for the last page), followed by an alphanumeric group ID (optional, if used then required for all pages and structured in accordance with ISO/IEC 15459-3 as a sequence of 3 data elements: Issuing Agency Code, followed by the Company Identification Number, followed by an alphanumeric code unique within the issuer's domain). Trailing slashes are optional.
+;5F;I have ______ children and they are . . . (for use with returnable packaging -- See Annex L) This Data Identifier must immediately follow the field (constructed of a Data Identifier, data and a group separator) with which it is associated.
+an1+an1...60;H;Name of Party. Name of a party followed by a plus (+) character followed by one or more code values from EDIFACT Code List 3035 "Party Qualifier". For examples see document.
+;1H;Employee Identification Code assigned by employer.
+an2+n9;2H;U.S. Social Security Number.
+;3H;ID Number for Non-Employee (internally assigned or mutually defined) (e.g., contract workers, vendors, service, and delivery personnel).
+;4H;National Social Security Number.
+;5H;Last Name.
+an2+an1...35;6H;Party Name (Line 2).
+an2+n10...15;7H;Contact Phone. Country Code, Area Code, Exchange, number [XX YYY ZZZ ZZZZ].
+an2+an3...35;8H;Contact Email.
+an2+an10...12;9H;Consignee Number. The unique identifying number can be the IRS, EIN, SSN, or the CBP assigned number, as required on the Security Filing. Only the following formats shall be used: IRS EIN: NN-NNNNNNN, IRS EIN w/ suffix: NN-NNNNNNNXX, SSN: NNN-NN-NNNN, CBP assigned nbr: YYDDPP-NNNNN
+;10H;Personal Identification Code (first initial, Last initial, last four of SSN).
+;11H;First Name and Middle Initial.
+an3+an2;12H;Military Grade (E1-E9, W1-W5, and O1-O10).
+an3+an2+an1...an20;15H;A National Identification Number, National Identity Number, or National Insurance Number used as a means of identifying individuals within a country for the purposes of work, taxation, government benefits, health care, and other governmentally-related functions. This structure of the identifier is DI (15H) followed by the ISO 3166-1 Alpha2 Country Code followed by the predominant government assigned identification code for individuals.
+;25H;Globally Unique Personal ID. assigned by a holder of a Company Identification Code (CIN) and including the related Issuing Agency Code (IAC) in accordance with ISO/IEC 15459 and its registry, structured as sequence of 3 concatenated data elements: IAC followed by CIN, followed by the ID unique within the holder's domain.
+an3+an3...35+"+"+a1...3;26H;Globally Unique Personal ID, with a "Party Qualifier" code value from EDIFACT Code List 3035, assigned by a holder of a Company Identification Code (CIN) and including the related Issuing Agency Code (IAC) in accordance with ISO/IEC 15459 and its registry, structured as a sequence of 5 concatenated data elements: IAC followed by CIN, followed by an ID unique within the CIN holder's domain, followed by the Plus character (+) and a code value from EDIFACT Code List 3035 "Party Qualifier". For examples see document.
+;I;Exclusive Assignment - Vehicle Identification Number (VIN) as defined in the U.S. under 49 CFR, §§ 565 and internationally by ISO 3779. (These are completely compatible data structures).
+;2I;Abbreviated VIN Code.
+;3I;Reserved -- Prior assignment.
+;4I;Globally unique transport vehicle identifier (e.g., Trucks) consisting of the Vehicle Identification Number (VIN) as defined in the U.S. under 49 CFR §§ 565, and internationally by ISO 3779, followed by the "+" character, then followed by the government-issued Vehicle Registration License Plate Number in the form of "4I" "VIN" "+" "government-issued Vehicle Registration License Plate Number" (quotes and spaces shown for clarity only, they are not part of the data).
+;5I;Unique production vehicle identifier that will be used during the vehicle production processes, consisting of the Body Tag Number (BTN, or any other descriptor used to identify the raw car body, or stated another way, the assemblage of parts that are used to start the vehicle's production), followed by the "+" character, then followed by the Production Order Number (PON), followed by the "+" character, and then followed by the Manufacturer-assigned Serial Number (SN).
+an1+an1...35;J;Unique license plate number.
+an2+an1...35;1J;Unique license plate number assigned to a transport unit which is the lowest level of packaging, the unbreakable unit.
+an2+an1...35;2J;Unique license plate number assigned to a transport unit which contains multiple packages.
+an2+an1...35;3J;Unique license plate number assigned to a transport unit which is the lowest level of packaging, the unbreakable unit and which has EDI data associated with the unit.
+an2+an1...35;4J;Unique license plate number assigned to a transport unit which contains multiple packages and which is associated with EDI data.
+an2+an1...20;5J;Unique license plate number assigned to a mixed transport unit containing unlike items on a single customer transaction and may or may not have associated EDI data.
+an2+an1...20;6J;Unique license plate number assigned to a master transport unit containing like items on a single customer transaction and may or may not have associated EDI data.
+;7J;Vehicle Registration License Plate Number (not unique without identification of country and issuing governmental region/authority)7.
+an2+n9;8J;Maritime Mobile Service Identity (MMSI). A nine digit number regulated by the International Telecommunications Union to uniquely identify a ship or a coast radio station. Example: 8J211123456
+;K;Order Number assigned by Customer to identify a Purchasing Transaction (e.g., purchase order number).
+;1K;Order Number assigned by Supplier to identify a Purchasing Transaction.
+;2K;Bill of Lading/Waybill/Shipment Identification Code assigned by Supplier/Shipper.
+;3K;Bill of Lading/Waybill/Shipment Identification Code assigned by Carrier.
+;4K;Line Number of the order assigned by Customer to identify a Purchasing Transaction. (See Annex C.9).
+;5K;Reference Number assigned by the Customer to identify a Shipment Authorization (Release) against an established Purchase Order.
+;6K;PRO# Assigned by Carrier.
+;7K;Carrier Mode in Free Text format mutually defined between Customer and Supplier (e.g., Air, Truck, Boat, Rail).
+;8K;Contract Number.
+;9K;Generic Transaction Reference Code (internally assigned or mutually defined).
+;10K;Invoice Number.
+;11K;Packing List Number.
+an3+an4+an1...25;12K;SCAC (Standard Carrier Alpha Code) (an4 - dash "-" filled left) and carrier assigned PROgressive number.
+an3+an4+an1...12;13K;Bill of Lading Number /Transport Receipt Number. SCAC + Container cargo's B/L number or waybill number.
+;14K;Combined Order Number and Line Number in the format nn...nn+nn...n where a plus (+) symbol is used as a delimiter between the Order Number and Line Number.
+;15K;KANBAN Number.
+;16K;DELINS Number: code assigned to identify a document which contains delivery information.
+;17K;Check Number.
+;18K;Structured Reference. (See Annex C.10).
+;19K;Foreign Military Sales Case Number.
+;20K;License Identifier, being a globally unique identifier for a license or contract under which items are generated, submitted for processing and/or paid for, that is constructed by concatenating. See documents
+;21K;Customer Data, being data that: A) from a customer perspective, is related to or associated with an item or transaction, or to a batch or related items or transactions, and B) comprises up to 35 printable characters and/or spaces, other than plus (+), drawn from the character set defined in ISO/IEC 646.
+;22K;Transaction Authentication Information, being a value, constructed by concatenating: A) an ISO/IEC 15459 issuing agency code. B) a value which accords with specifications of the issuing agency concerned, that allows verification of the authenticity of the transaction concerned and, in particular, that the transaction was initiated by the party, claimed within the transaction to have been its initiator, by: a) the recipient of a transaction, and/or b) one or more of the parties involved in its handling or processing, and/or c) a trusted third party.
+;25K;Global Unique Identification of Groupings of Transport Units Assigned by the Carrier, defined as: Identification of a Party to a Transaction as defined assigned by a holder of a Company Identification Number (CIN) and including the related Issuing Agency Code (IAC) in accordance with ISO/IEC 15459 and its registry, structured as a sequence of 3 concatenated data elements: IAC, followed by CIN, followed by the Bill of Lading or Waybill or Shipment Identification Code that is unique within the CIN holder's domain
+;26K;Global Unique Identification of Groupings of Transport Units Assigned by the Shipper, defined as: Identification of a Party to a Transaction assigned by a holder of a Company Identification Number (CIN) and including the related Issuing Agency Code (IAC) in accordance with ISO/IEC 15459 and its registry, structured as a sequence of 3 concatenated data elements: IAC, followed by CIN, followed by the Bill of Lading or Waybill or Shipment Identification Code that is unique within the CIN holder's domain
+an3+an1...35;27K;Supplier Assigned Quotation Number -- Number assigned to a quotation by the sup
+;L;Storage Location.
+;1L;Location.
+;2L;"Ship To:"Location Code defined by an industry standard or mutually defined.
+;3L;"Ship From:"Location Code defined by an industry standard or mutually defined.
+an2+a2;4L;Country of Origin, two-character ISO 3166 country code. With agreement of trading partners and when the Country of Origin is mixed, Country Code "AA" shall be used.
+;5L;"Ship For:" Location Code defined by an industry standard or mutually defined.
+;6L;Route Code assigned by the supplier to designate a specific transportation path.
+an2+an6;7L;6-character Department of Defense Activity Code (DoDAAC).
+;8L;Port of Embarkation -- Mutually Defined.
+;9L;Port of Debarkation -- Mutually Defined.
+an3+n5...27;11L;Location (Latitude/Longitude/Altitude) encoded in the format xnn.nnnnn/xnnn.nnnnnn/xnnnn9.
+;12L;"Ship To:" Location (Latitude/Longitude/Altitude) encoded in the format xnn.nnnnn/xnnn.nnnnnn/xnnnn9.
+;13L;"Ship From:" Location (Latitude/Longitude/Altitude) encoded in the format xnn.nnnnn/xnnn.nnnnnn/xnnnn9.
+;15L;"Ship For:" Location (Latitude/Longitude/Altitude) encoded in the format xnn.nnnnn/xnnn.nnnnnn/xnnnn9.
+an3+an1...60;16L;Tag Activation Location. English location name (character set: 0-9, A-Z <Space>).
+an3+an1...60;17L;Tag Deactivation Location. English location name (character set: 0-9, A-Z <Space>).
+an3+an2...12;18L;FAO fishing area code as defined by the Fisheries and Aquaculture Department of the FAO (http://www.fao.org. Search for Fishing Area Code sub-site). All characters of the GS1 General Specification-defined sub-set of ISO/IEC 646 are allowed. For examples see docs.
+;20L;First Level (internally assigned).
+;21L;Second Level (internally assigned).
+;22L;Third Level (internally assigned.
+;23L;Fourth Level (internally assigned).
+;24L;Fifth Level (internally assigned).
+an3+an1...35;25L;Identification of a Party to a Transaction, e.g., 25L IAC CIN LOC assigned by a holder of a Company Identification Number (CIN) and including the related Issuing Agency Code (IAC) in accordance with ISO/IEC 15459 and its registry, structured as a sequence of 3 concatenated data elements: IAC, followed by CIN, followed by the physical internal location (LOC) that is unique within the CIN holder's domain.
+;26L;Location Code, being a code identifying a location or geographic area, or an associated group of such locations or areas, that has relevance to a related transaction and that complies with one or the structures defined in the docs.
+an3+an5+n1...3;27L;Event Location UN/LOCODE. UN/LOCODE followed by a plus (+) character followed by one or more code values from EDIFACT Code List 3227 "Location function code qualifier".
+an3+an1...35;28L;Number and Street Address. Used in conjunction with H, 6H, 28L, 29L, 30L, 31L, 32L.
+an3+an1...35;29L;City Name. Used in conjunction with H, 6H, 28L, 29L, 30L, 31L, 32L.
+an3+an1...9;30L;Country Sub-entity Details. Used in conjunction with H, 6H, 28L, 29L, 30L, 31L, 32L.
+an3+an4...11;31L;Postal Code. Used in conjunction with H, 6H, 28L, 29L, 30L, 31L, 32L (If a "-" dash is used, it shall be expressly encoded).
+an3+a2;32L;Country Code. ISO 3166-1 Alpha 2 Code Used in conjunction with H, 6H, 28L, 29L, 30L, 31L, 32L.
+;33L;Uniform Resource Locator (URL). Includes all characters that form a URL, including header data such as e.g., http://. Character set as listed in RFC 1738.
+;34L;Pointer to Process URL (P2P URL) for initiating a URL to carry all other data elements encoded in an AIDC media according to the following rule: Scan the code and initiate the URL starting with the P2P URL string, omitting DI 34L and ISO/IEC 15434 envelope syntax (prefix and postfix) and append all other data elements that have been scanned in same sequence as encoded in the media, including DIs and data element separators. Convert special characters in the appended data into RFC 1738 format (e.g., Group Separator "GS" translated into RFC 1738 sequence %1D). Note that this does not apply to the P2P URL itself.
+an3+a2+an3...27;35L;A government-assigned approval number of vessel / aquaculture site / farm / processor, starting with an ISO 3166-1 alpha-2 country code, followed by the approval number. All characters of the GS1 General Specification-defined sub-set of ISO/IEC 646 are allowed. Example: 35LIECK0107EC = Country, Ireland. Vessel Name: FV Endurance DA31.
+an3+a2+an3...27;36L;A government-assigned approval number of producer or farm or first deboning / cutting hall, starting with an ISO 3166-1 alpha-2 country code, followed by the approval number. All characters of the GS1 General Specification-defined sub-set of ISO/IEC 646 are allowed. Example: 36LIECK0107EC = Country: Ireland. Vessel Name: FV Endurance DA31.
+an3+an1...9;51L;"Ship From:" - Location code defined by a postal authority (e.g., 5-digit and 9-digit ZIP codes identifying U.S. locations or 6-character postal codes identifying Canadian locations).
+an3+an1...9;52L;"Ship To:" - Location code defined by a postal authority (e.g., 5-digit and 9-digit ZIP codes identifying U.S. locations or 6-character postal codes identifying Canadian locations).
+an3+an1...9;54L;"Ship From:" - Location code defined by a postal authority in the format: postal codes (e.g., 5-digit ZIP codes identifying U.S. locations or 6- or 7-character postal codes identifying United Kingdom locations) followed by two character ISO 3166 country code (e.g., US or GB).
+an3+an1...9;55L;"Ship To:" - Location code defined by a postal authority in the format: postal codes (e.g., 5-digit ZIP codes identifying U.S. locations or 6- or 7-character postal codes identifying United Kingdom locations) followed by two character ISO 3166 country code (e.g., US or GB).
+;10M;Army Form 2410 data. Format is data value preceded by the block number of the form 2410. Field lengths and acceptable characters can be found at http://www.apd.army.mil/pdffiles/p738_751.pdf.
+;11M;Army Form 2408 data. Format is data value preceded by the block number of the form 2408. Field lengths and acceptable characters can be found at http://www.apd.army.mil/pdffiles/p738_751.pdf.
+;12M;Army Form 2407 data. Format is data value preceded by the block number of the form 2407. Field lengths and acceptable characters can be found at http://www.apd.army.mil/pdffiles/p738_751.pdf.
+;13M;Air Force Form 95 data. Format is data value preceded by the block number of the form 95. Field lengths and acceptable characters can be found at http://www.gsa.gov/portal/forms/download/116418.
+;14M;Navy Form 4790 data. Format is data value preceded by the block number of the form 2410. Field lengths and acceptable characters can be found at http://www.navair.navy.mil/logistics/4790/library/Chapter%2015.pdf.
+an1+an13...15;N;National/NATO Stock Number (NSN).
+;1N;Product Characteristic Data defined by the Chemical Industry Data Exchange (CIDX).
+;3N;Coding Structure in Accordance with Format Defined by Electronic Industries Association Japan (EIAJ).
+;4N;Coding Structure and Formats in Accordance with GS1 Application Identifiers (AI plus data) (GS1).
+;5N;Coding Structure and Formats in Accordance with AIAG Recommendations. The full Data Identifier is in the form 5Nxx where the "xx" is found in the full code list that can be found at http://www.mhi.org/standards - see under "MH10 Data Identifiers (Continuous Maintenance Version)".
+;6N;U.S. DOD Requisition and Issue Procedure Codes. The format is the appropriate MILSTRIP code followed by the data value associated with that code. (The full list of codes is available at http://www2.dla.mil/j-6/dlmso/elibrary/Manuals/DLM/MILSTRIP/MILSTRIP.pdf.
+;7N;U.S. Defense Transportation Regulation Codes. The format is the DTR code followed by the appropriate data value associated with that code. (The full list of codes is available at http://www.transcom.mil/dtr/part-ii/dtr_part_ii_toc.pdf.
+;8N;Production Animal Identification Codes. The format is the production animal code followed by the appropriate data value associated with that code. The Technical Report and the full list of Extended Data Elements (codes) is maintained at http://www.aimglobal.org/store/view_product.asp?id=4926441 Extended Data Elements (Codes). http://www.aimglobal.org/store/view_product.asp?id=4926483 Technical Report.
+an2+an5...22;9N;Pharmacy Product Number maintained by IFA (www.ifaffm.de) and structured as follows: Two-digit product registration agency code followed by the registered product number (assigned by product registration agencies) and two PPN check digits.
+;12N;The Data construct is defined and controlled by the RLA, comprised of 2 segments: the field identifier (FI) code, immediately followed by the data as defined for that element according to the data dictionary of the RLA. It is essentially a catalog of fields with standardized content.
+;P;Item Identification Code assigned by Customer.
+;1P;Item Identification Code assigned by Supplier.
+;2P;Code Assigned to Specify the Revision Level for an Item (e.g., engineering change level, edition, or revision).
+an2+n13...14;3P;Combined Manufacturer Identification Code/Item Code Under the 12/13-digit GS1 Formats, plus supplemental codes, if any.
+;4P;Item Code Portion of GS1 Formats.
+;5P;Freight Classification Item Number Assigned by Carrier for Purposes of Rating Hazardous Materials (e.g., Motor Freight, Air, Boat, Rail Classification).
+;6P;Combined Supplier Identification and Item Code (internally assigned or mutually defined).
+;7P;Common Language Equipment Identification (CLEI) assigned by the manufacturer to some telecommunications equipment.
+an2+n14;8P;14-digit GS1 format for GTIN-14 code structure.
+;9P;Combined Manufacturer Identification Code (9-digit DUNS number assigned by Dun & Bradstreet) and the Item Code/Part Number (assigned by the manufacturer).
+;10P;Hazardous Material Code as defined by ANSI X12.3 in the format Data Element 208 (1-character code qualifier) followed by Data Element 209 (Hazardous Material Code)
+an3+an10;11P;10-character CLEI Code for telecommunications equipment.
+;12P;Document Type (e.g., Pick List, Design Drawing, etc.) (internally assigned or mutually defined).
+;13P;VMRS System Code.
+;14P;VMRS System and Assembly Code.
+;15P;VMRS System, Assembly, & Part Code.
+;16P;VMRS System, Assembly, or Part Code. (User Modified).
+;17P;Combined GS1 Supplier Identification and Item Code Assigned By The Supplier.
+;18P;Combined VMRS supplier ID and Supplier Assigned Part Number.
+;19P;Component of an Item. (One product contained in multiple packages).
+;20P;First Level (Customer Assigned).
+;21P;Second Level (Customer Assigned).
+;22P;Third Level (Customer Assigned).
+;23P;Fourth Level (Customer Assigned).
+;24P;Fifth Level (Customer Assigned).
+;25P;Identification of a Party to a Transaction Assigned by a Holder of a Company Identification Number (CIN) and including the related Issuing Agency Code (IAC) in accordance with ISO/IEC 15459 and its registry, structured as a sequence of 3 concatenated data elements: IAC, followed by CIN, followed by the supplier assigned part number that is unique within the CIN holder's domain.
+;26P;Part Number of Next Higher Assembly.
+an3+n7...12;27P;Commodity HTS-6 Code. Using the format: 4012.11 or 4012.11.4000 (Decimal point is expressly encoded) The Harmonized System (HS) Classification is a 6-digit standardized numerical method of classifying traded products. HS numbers are used by customs authorities around the world to identify products for the application of duties and taxes. Additional digits are added to the HS number by some governments to further distinguish products in certain categories. In the United States, numbers used to classify exported products are called "Schedule B" numbers. The U.S. Census Bureau administers the Schedule B system. Schedule B numbers, not HS numbers, must be provided on the Shippers' Export Declaration (SED). http://www.niccomp.com/rohs/files/NIC_HTS1006.pdf Import codes are administered by the U.S. International Trade Commission (USITC). http://hts.usitc.gov/
+an3+an1...100;28P;Cargo Name. Plain language description (English).
+an3+n5;29P;Product Classification Code as defined with the GMDN (Global Medical Device Nomenclature - http://www.gmdnagency.org).
+;30P;First Level (Supplier Assigned).
+;31P;Second Level (Supplier Assigned).
+;32P;Third Level (Supplier Assigned).
+;33P;Fourth Level (Supplier Assigned).
+;34P;Fifth Level (Supplier Assigned).
+;40P;A Code Assigned BY A Customer TO THE Identification Number OF THE Manufacturer's Material Safety Data Sheet (MSDS) document that describes the uses, hazards, and chemical composition of a hazardous material.
+an3+an3...9;49P;Export Controlled Item. Subject to export control and or restrictions as identified in the Wassenaar Arrangement. DI followed by the Alpha-2 ISO 3166 Country Code of the country that imposed the restriction followed by Wassenaar Code (http://www.wassenaar.org/controllists/index.html).
+an3+an3...35;50P;Manufacturer-Assigned Item Identifier - comprising an item number assigned by the item manufacturer, followed by a plus (+) sign, followed - if required to uniquely identify the item within the manufacturer's product range - by a manufacturer-assigned item version. Example 50PABC+6 would represent item number ABC, item version 6
+;51P;Globally Unique Item Identifier comprising the Identification of a party to a transaction assigned by a holder of a Company Identification Number (CIN) and including the related Issuing Agency Code (IAC) in accordance with ISO/IEC 15459 and its registry, followed by a plus (+) sign, followed by the Manufacturer-assigned item identifier as defined with 50P. Example: 51PJ4LBE0431863103+ABC+ would represent the item with item number ABC and no version number manufactured by the company with Belgian VAT number 0431863103.
+an3+an1...50;52P;Color Code. Color of an item/object identified by a code or term mutually agreed upon between trading partners.
+an3+a1+n4+an5...20;53P;Identifier for Specific Marine Equipment approved under the European Union Directive on Marine Equipment (2014/90/EU) and Implementing Regulation (EU) 2018/608. For format see docs.
+an3+an1...35;54P;UDI-DI (Unique Device Identification - Device Identifier) for Medical Devices (MD) and In-vitro-Diagnostics (IvD) as the unique key to public UDI data bases (GUDID, EUDAMED, etc.), according to national regulatory requirements, as outlined by the International Medical Device Regulators Forum (IMDRF). All printable characters of the UTF-8 character set are allowed.
+;Q;Quantity, Number of Pieces, or Amount (numeric only) (unit of measure and significance mutually defined.
+;1Q;Theoretical Length/Weight (numeric only).
+;2Q;Actual Weight (numeric only).
+an2+an2;3Q;Unit of Measure, as defined by the two character ANSI X12.3 Data Element Number 355 Unit of Measurement Code.
+;4Q;Gross Amount.
+;5Q;Net Amount.
+;6Q;Where Multiple Containers Comprise a Single Product (the contents of each container must be combined with the content of the other containers to constitute a single product) the Data Identifier "6Q" shall be used to link the various containers. The format # of # ("this is the nth piece of x pieces to define the product") Presented in the format "n/x", where the "/" (slash) is used as a delimiter between two values.
+an2+n1...8+an2;7Q;Quantity, Amount, or Number of Pieces in the format: Quantity followed by the two character ANSI X12.3 Data Element Number 355 Unit of Measurement Code.
+an2+n4...6;8Q;Container Rated Weight. Manufacturer-assigned weight carrying capability of the container. Assigned at time of manufacture. Unit of measure is kg.
+;9Q;Piece Weight: weight of a single item.
+an3+n4...6;11Q;Tare Weight: weight of an empty container. Container body weight. Manufacturer-assigned weight of the empty container. Assigned at time of manufacture. Unit of measure is kg (Tare weight).
+an3+n1...10+an3;12Q;Monetary Value established by the Supplier in the format of: the value followed by an ISO 4217 data element code for representing unit of value of currencies and funds (e.g., 12Q2.50USD) (2.50 Monetary Value in USA Dollars) significance mutually defined. Entry Value. Value followed by an ISO 4217 data element code for representing unit of value of currencies and funds (e.g., 12Q2.50USD) (2.50 Monetary Value in USA Dollars)
+;13Q;# of # ("this is the nth piece of x pieces in this shipment") Presented in the format "n/x", where the "/" (slash) is used as a delimiter between two values. See Annex C.6.3 for further information.
+;14Q;Beginning Secondary Quantity.
+;15Q;Ending Secondary Quantity.
+;16Q;Number Of Pieces in Van.
+;17Q;Number Of Shipments in Van.
+;18Q;Cube expressed in cubic meters or cubic feet followed by the ANSI X12.3 data element number 355 unit of measure code (CR of CF). No implied decimal point.
+;19Q;Width expressed in linear meters or linear feet followed by the ANSI X12.3 data element number 355 unit of measure code (LC or LF). No implied decimal point.
+;20Q;Height expressed in linear meters or linear feet followed by the ANSI X12.3 data element number 355 unit of measure code (LC or LF). No implied decimal point.
+;21Q;Length expressed in linear meters or linear feet followed by the ANSI X12.3 data element number 355 unit of measure code (LC or LF). No implied decimal point.
+;22Q;Net Weight Of Shipment expressed in pounds or kilograms (kilos) followed by the ANSI X12.3 data element number 355 unit of measure (LB or KG). No implied decimal point.
+;23Q;Van Length expressed in linear meters or linear feet followed by the ANSI X12.3 data element number 355 unit of measure (LC or LF). No implied decimal point.
+;24Q;Inside Cube of a Van expressed in cubic meters or cubic feet followed by the ANSI X12.3 data element number 355 of unit measure code (CR or CF). No implied decimal point.
+;25Q;Net Explosive Weight (a computed value of explosive equivalent expressed in pound of TNT). The measure of NEW is used internationally for explosive safety quantity distance arc computations. No implied decimal point.
+;26Q;Packaging Level, specifying the hierarchical level of packaging in accordance with HIBC (Health Industry Bar Code) specifications.
+an3+an1...20;27Q;Single Product Price Value, Net, "." (dot) used as decimal point (e.g., 27Q1000.5 for the price value of 1000.50) Structure: an3+an1...20 <DI><price value> Character set: 0 to 9, dot (ISO 646 ASCII value decimal 46, hexadecimal 2E). See docs for examples.
+an3+an1...10;28Q;Single Price Charge Value For Postage And Packaging, "." (dot) represents the position of a comma (e.g., 28Q100.50 for the value of 100,50) Structure: an3+an1...10 <DI><price value> Character set: 0 to 9, dot. See docs for examples.
+an3+n1...6;29Q;Discount Percentage, "." (dot) represents the position of a comma (e.g., 29Q8.5 for a discount value of 8,5%) Structure: an3+n1...6 (12.456) <DI><discount percentage (%)> Character set: 0 to 9, dot. See docs for examples.
+an3+an1...5;30Q;VAT Percentage, "." (dot) represents the position of a comma (e.g., 30Q8.5 for the VAT value of 8,5%) Structure: an3+an1...5 (12.45) <DI><VAT percentage (%)> Character set: 0 to 9, dot. See docs for examples.
+an3+an3;31Q;Currency, ISO 4217 currency code. Structure: an3+an3 <DI><Currency, e.g., EUR> Character set: A-Z, 0 to 9, see docs for examples.
+;1R;Return Authorization Code (RMA) assigned by the Supplier.
+;2R;Return Code Assigned by the Customer.
+an4;4R;U.S. Department of Defense Identification Code (DoDIC).
+;5R;Data in the format and using semantics defined by the holder of a Company Identification Number (CIN) that has been issued by an Issuing Agency Code (IAC) in accordance with ISO/IEC 15459, defined as a sequence of concatenated data elements: IAC, followed by CIN, followed by the separator character ":" (colon) followed by the data in the fo
+;6R;ISO/IEC 20248 digital signature data construct. If the underlying data carrier encoding is 7 bits, then only the ISO/IEC 20248 raw format may be used. See docs for examples.
+an2+an1...3;7R;Aquatic Sciences and Fisheries Information System (ASFIS) ‘Inter-agency 3-alpha species code', maintained by the Food and Agriculture Organization of the United Nations (www.fao.org, then search for "ASFIS"). See docs for examples.
+an2+an1...10;8R;Food and Agricultural Organization (FAO) International Standard Classification of Fishing Gears (ISSCFG) code. (www.fao.org) All characters of the GS1 General Specification-defined sub-set of ISO/IEC 646 are allowed. See docs for examples.
+an2+an2;9R;Production method for fish and seafood as specified by the Fisheries and Aquaculture Department of the Food and Agricultural Organization (FAO) of the United Nations, according to EU Regulation 1379/2013. (www.fao.org). All characters of the GS1 General Specification-defined sub-set of ISO/IEC 646 are allowed. See docs for examples.
+;S;Serial Number or Code Assigned by the Supplier to an Entity for its Lifetime, (e.g., computer serial number, traceability number, contract tool identification).
+;1S;Additional Code Assigned by the Supplier to an Entity for its Lifetime (e.g., traceability number, computer serial number).
+an2+an2...30;2S;Advance Shipment Notification (ASN) Shipment ID (SID) corresponds to ANSI ASC X12 Data Element 396.
+;3S;Unique Package Identification Assigned by Supplier (lowest level of packaging which has a package ID code. Shall contain like items).
+;4S;Package Identification Assigned by Supplier to master packaging containing like items on a single customer order
+;5S;Package Identification Assigned by Supplier to master packaging containing unlike items on a single customer order.
+;6S;Package Identification Assigned by Supplier to master packaging containing like items over multiple customer orders.
+;7S;Package Identification Assigned by Supplier to master packaging containing unlike items over multiple customer orders.
+an2+n18;8S;Supplier ID/Unique Container ID presented in the data format specified by the GS1 SSCC-18.
+;9S;Package Identification, Generic (mutually defined).
+;10S;Machine, Cell, or Tool ID Code.
+;11S;Fixed Asset ID Code.
+;12S;Document Number (internally assigned or mutually defined).
+;13S;Container Security Seal.
+;14S;4th Class Non-identical parcel post manifesting.
+;15S;Serial Number Assigned by the Vendor Entity, that can only be used in conjunction with "13V".
+;16S;Version Number, e.g., Software Version.
+;17S;Combined 6-digit GS1 Supplier Identification and Unique Package Identification Assigned by the Supplier.
+an3+an5 + an1...20;18S;CAGE Code & Serial Number Unique Within CAGE.
+;19S;Combined Dun & Bradstreet company identification of the supplier followed by a unique package identification assigned by the supplier, in the format nn...nn+nn...n where a plus symbol (+) is used as a delimiter between the DUNS Number and unique package identification.
+;20S;Traceability Code for an Entity Assigned by the Customer.
+;21S;Tire Identification Number as defined by the U.S. Department of Transportation (D.O.T) under U.S. Code 49 CFR 574.5.
+;22S;Unique Individual Identity for Cellular Mobile Telephones.
+an3+an12;23S;Media Access Control (MAC) Address conforming with IEEE 802.11.
+an3+n6...26;24S;According to ISO/IEC 15963 (value is a conversion of its bit value to 8-bit ASCII values). This Data Identifier could possibly assume any ASCII-256 value. For freight container tags the Registration Authority (RA) for manufacturers is the RA for ISO 14816. (ISO 646).
+;25S;Identification of a party to a transaction assigned by a holder of a Company Identification Number (CIN) and including the related Issuing Agency Code (IAC) in accordance with ISO/IEC 15459 and its registry, structured as a sequence of 3 concatenated data elements: IAC, followed by CIN, followed by the supplier assign serial number that is unique within the CIN holder's domain.
+an3+an1...35;26S;Equipment Identifier, being a globally unique identifier for a device, an item of equipment or instance of a computer application used in the production, transport, processing or other handling of items, that is constructed by concatenating, see docs.
+;27S;Item Number Within Batch, being a string of numeric digits, see docs.
+;28S;Batch-and-Item Number, being the concatenation of a data identifier 27T batch number and the data identifier 27S item number of an item belonging to the batch concerned.
+;30S;Additional Traceability Code For An Entity Assigned by the Supplier in addition to or different from the traceability code(s) provided by "S" or "1S".
+;31S;Beginning Serial Number for serial numbers in sequence.
+;32S;Ending Serial Number for serial numbers in sequence.
+;33S;Serial Number of Next Higher Assembly.
+;34S;Serial Number or Part Number of End Item.
+;35S;Bumper Number. (Used in Unit DOD Move).
+;36S;Pallet Identifier. (Used for loaded 463L air pallets).
+;37S;Unique Item Identifier comprised of a sequence of 5 data elements: "IAC", followed by "CIN", followed by "Part Number (PN)", followed by the "+" character, followed by the supplier assigned (or managed) "Part Serial Number (PSN)" that is globally unique within the CIN holder's domain, in the format IAC CIN PN + PSN (spaces provided for visual clarity only, they are not part of the data).
+an3+n2+an1...3+an1...9+an1...30;42S;Unique Item Identifier (UII) in 25S format preceded by numeric value indicating serial number element length for use by systems that require the "serial number" component of a concatenated Serial Number element (IAC+CIN+SN). Format: DI+LI+IAC+CIN+SN (LI=length of SN).
+an3+n1...7+n12...18+n1;43S;Integrated Circuit Card Identifier (ICCID) in accordance with ITU-T Recommendation E.118 and ETSI Recommendation GSM 11.11. A maximum of 20 digits consisting of Issuer identification number (IIN, maximum of 7 digits), Individual account identification (variable, length determined by IIN, but the same length within individual IINs), Check digit (single digit calculated using Luhn algorithm.
+an3+an1...20;50S;First Level (Supplier Assigned).
+an3+an1...20;51S;Second Level (Supplier Assigned).
+an3+an1...20;52S;Third Level (Supplier Assigned).
+an3+an1...20;53S;Fourth Level (Supplier Assigned).
+an3+an1...20;54S;Fifth Level (Supplier Assigned).
+an3+16...26;96S;EPC number (Typically Serialized Global Trade Identification Number - SGTIN).
+an3+an4...25;97S;Encrypted serial number assigned by the Supplier to an entity, which can be authenticated by an independent trusted third party. The encrypted serial number does not describe any parameters of the entity without decryption by an independent third party.
+;T;Traceability Number assigned by the Customer to identify/trace a unique group of entities (e.g., lot, batch, heat).
+;1T;Traceability Number assigned by the Supplier to identify/trace a unique group of entities (e.g., lot, batch, heat).
+;3T;Exclusive Assignment. (U.S. EPA vehicle identification for emissions testing).
+;20T;First Level (Customer Assigned).
+;21T;Second Level (Customer Assigned).
+;22T;Third Level (Customer Assigned).
+;23T;Fourth Level (Customer Assigned).
+;24T;Fifth Level (Customer Assigned).
+;25T;Identification of a party to a transaction assigned by a holder of a Company Identification Number (CIN) and including the related Issuing Agency Code (IAC) in accordance with ISO/IEC 15459 and its registry, structured as a sequence of 3 concatenated data elements: IAC, followed by CIN, followed by the supplier assigned traceability number that is unique within the CIN holder's domain.
+;26T;Batch Identifier comprising the concatenation of see docs.
+;27T;Batch Number, issued under the control of an identified party or unit of processing equipment, or under the provisions of an identified license, see docs.
+;30T;First Level (Supplier Assigned).
+;31T;Second Level (Supplier Assigned).
+;32T;Third Level (Supplier Assigned).
+;33T;Fourth Level (Supplier Assigned).
+;34T;Fifth Level (Supplier Assigned). Specification of a postal service and associated process data in accordance with UPU standard S25 data construct "Service Data".
+;6U;Licensing Post Data, in accordance with the specification in UPU standard S25.
+;15U;Specification of supplementary postal service and associated process data in accordance with UPU standard S25 data construct "Supplementary Service Data".
+;16U;Postal Administration Identifications, being the identification, expressed in accordance with the specification in UPU standard S25, of one or more postal administrations involved in the processing of a mail item or batch.
+;17U;UPU Location Code, being a code identifying a location or geographic area, or an associated group of such locations or areas, that has relevance to a related transaction and that complies with one of the structures defined in a) to g) in the docs.
+;18U;Qualified UPU Location Code, concatenation of: A) a location category drawn from UPU code list 139, B) a data identifier 17U UPU location code.
+;19U;License Plate with Service Data and Location Code is a compound data construct, compliant with the specification in UPU standard S25, which includes specification of: A) an ISO/IEC 15459-compliant item identifier, B) a data identifier 5U compliant specification of the service to be provided in respect of the item, C) a data identifier 17U compliant UPU location code or a data identifier 18U compliant qualified UPU location code.
+;55U;OCR Data Locator.
+;V;Supplier Code Assigned by Customer.
+;1V;Supplier Code Assigned by Supplier.
+an2+n8;2V;U.P.C. Company Prefix.
+an2+n9;3V;GS1 Company Prefix.
+;4V;Carrier Identification Code assigned by an industry standard mutually defined by the Supplier, Carrier, and Customer.
+;5V;Financial Institution Identification Code (mutually defined).
+;6V;Manufacturer's Identification Code (mutually defined).
+;7V;Code assigned to a party which has financial liability for an entity or group of entities (e.g., owner of inventory) (mutually defined).
+;8V;Customer Code Assigned by the Customer.
+;9V;Customer Code Assigned by the Supplier.
+an3+an10...15;10V;Manufacturer ID.
+;11V;Organization with budget responsibility for an entity, process, or procedure (e.g., shop, division, department)(internally assigned).
+an3+n9...13;12V;DUNS Number Identifying Manufacturer.
+an3+n9...13;13V;DUNS Number Identifying Supplier.
+an3+n9...13;14V;DUNS Number Identifying Customer.
+;15V;Carrier-Assigned Shipper Number.
+;16V;VMRS Supplier ID.
+an3+an5;17V;U.S. DoD CAGE Code.
+;18V;Identification of a party to a transaction in which the data format consists of two concatenated segments. The first segment is the Issuing Agency Code (IAC) in accordance with ISO/IEC 15459, the second segment is a unique entity identification Company Identification Number (CIN) assigned in accordance with rules established by the issuing agency
+;19V;Specification of a party's role(s), in a transaction, consisting of one or more code values from EDIFACT Code List 3035 "Party Qualifier", separated by plus (+) characters (Never to be concatenated with other DIs in a linear symbol or other media where the concatenation character is a plus (+) character).
+;20V;Identification of a party to a transaction assigned by a holder of a Company Identification Number (CIN) and including the related Issuing Agency Code (IAC) in accordance with ISO/IEC 15459 and its registry, structured as a sequence of 3 concatenated data elements: IAC, followed by CIN, followed by a plus (+) character followed by one or more code values from EDIFACT Code List 3035 "Party Qualifier", separated by plus (+) characters (Never to be concatenated with other DIs in a linear symbol or other media where the concatenation character is a plus (+) character).
+an3+an1...35;21V;Identification of a party to a transaction, e.g., 21V IAC CIN OSU, assigned by a holder of a Company Identification Number (CIN) and including the related Issuing Agency Code (IAC) in accordance with ISO/IEC 15459 and its registry, structured as a sequence of 3 concatenated data elements: IAC, followed by CIN, followed by the organizational sub-unit identification assigned by the CIN that is unique within the CIN holder's domain.
+an3+an4;22V;Carrier SCAC. Standard Carrier Alpha Code - The National Motor Freight Traffic Association, Inc., (NMFTA) assigns SCACs for all companies except those codes used for identification of freight containers not operating exclusively in North America, intermodal chassis and trailers, non-railroad owned rail cars, and railroads.
+an3+a2+an3...18;23V;Government-assigned Value Added Tax identification number identifying supplier, starting with an ISO 3166-1 alpha-2 country code (except for Greece, which uses the ISO 639-1 language code EL), followed by the government-assigned VAT number. See docs for example.
+an3+a2+an3...18;24V;Government-assigned Value Added Tax identification number identifying customer, starting with an ISO 3166-1 alpha-2 country code (except for Greece, which uses the ISO 639-1 language code EL), followed by the government-assigned VAT number. See docs for example.
+;W;Work Order Number (e.g., "Production Paper") (internally assigned).
+;1W;Operation Sequence Number. A number that defines the order of a particular operation in a series of operations, generally in a manufacturing or assembly process.
+;2W;Operation Code/Work Code - the type of work to be performed (internally assigned or mutually defined).
+;3W;Combined Work Order Number and Operation Sequence Number in the format nn...n+nn...n where a plus symbol (+) is used as a delimiter between the Work Order Number and the Operation Sequence Number.
+;4W;Status Code (internally assigned or mutually defined).
+;5W;Work Unit Code -- identifies system, subsystem, assembly, component etc. on which maintenance is performed.
+;6W;Nomenclature -- (internally assigned or mutually defined).
+;10W;Form Control Number -- Preprinted control number on forms.
+;11W;Quality Assurance Inspector -- Last Name.
+;12W;Telephone Number of the Person/Activity Completing the Form -- expressed in the format (country code) city or area code plus local number i.e. (1) 319 555 1212.
+;Z;Mutually Defined Between Customer and Supplier.
+;1Z;Mutually Defined Between Carrier and Supplier.
+;2Z;Mutually Defined Between Customer and Carrier.
+;3Z;Free Text.
+;4Z;Mutually Defined Between Carrier and Trading Partner.
+;10Z;Structured Free Text (Header Data).
+;11Z - 99Z;Structured Free Text (Line 1-89 Data).
+
