@@ -26,7 +26,7 @@ docker build --tag=dmc-generator/streamlit .
 ```
 Run container
 ```shell
-docker run -d -p 8502:8501 --name=stramlit-dmc-generator dmc-generator/streamlit
+docker run -d -p 8502:8501 --name=streamlit-dmc-generator dmc-generator/streamlit
 ```
 
 
