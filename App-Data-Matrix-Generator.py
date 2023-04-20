@@ -157,6 +157,14 @@ def main():
     # configure page => set favicon and page title
     st.set_page_config(page_title="DMC Generator", page_icon="💡")  #  chr(int(" U+1F4A1"[2:], 16)) # https://emojipedia.org/  chr(int("U+1F6A8"[2:], 16))
     st.title("Data-Matrix-Code Service")
+    # hide "made with Streamlit" text in footer
+    hide_streamlit_style = """
+                <style>
+                #MainMenu {visibility: hidden;}
+                footer {visibility: hidden;}
+                </style>
+                """
+    st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
     initialize_options()
 
