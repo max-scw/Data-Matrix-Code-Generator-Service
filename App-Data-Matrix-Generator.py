@@ -1,14 +1,69 @@
 import streamlit as st
 import uuid
 import binascii
+from pip._vendor import tomli as tomllib  # standard in Python 3.11
+from pathlib import Path
 
-from typing import Dict, Union, List
+from typing import Dict, Union, List, Any
 
 from DMCGenerator import DMCGenerator
 from DMCText import DMCMessageBuilder, FormatParser, DATA_IDENTIFIERS
 
 DI_FORMAT = "ANSI-MH-10"
 FORMAT_MAPPING = DATA_IDENTIFIERS[DI_FORMAT]["mapping"]
+
+
+class DMCConfig:
+    """
+    reads the standard streamlit config and looks for the additional segment [DMC], where configs specific for
+    this app is stored in.
+    Possible config keys:
+    - requiredDataIdentifiers: Array of data identifiers, that must be present in a DMC, e.g. ['P', 'S|T', 'V'],
+    whereas '|' signifies an OR, i.e. the data identifier S or T must be present in the code, the identifiers P
+    and V required without any other option
+    """
+    def __init__(self, path_to_file: Union[str, Path]):
+        config = self._read_config(path_to_file)
+        self.config = config["DMC"] if "DMC" in config else []
+
+    @staticmethod
+    def _read_config(path_to_file: Union[str, Path]) -> Union[Dict[str, Any]]:
+        path_to_file = Path(path_to_file).with_suffix(".toml")
+        if not path_to_file.exists():
+            UserWarning(f"Config file {path_to_file.as_posix()} does not exist.")
+            return dict()
+        # read file
+        with open(path_to_file, "rb") as fid:
+            info = tomllib.load(fid)
+        return info
+
+    @property
+    def required_dis(self) -> Union[List[List[str]]]:
+        key = "requiredDataIdentifiers"
+        dis = self.config[key] if key in self.config else []
+        if dis:
+            dis = [di.split("|") for di in dis]
+        return dis
+
+    def check_for_required_dis(self, message_fields: Dict[str, str]) -> bool:
+        missing_dis = []
+        # loop through required data identifiers
+        for dis in self.required_dis:
+            # check if this (required) identifier is in the messages
+            if not any([di in message_fields.keys() for di in dis]):
+                missing_dis.append(" or ".join(dis))
+        # raise error message if some required data identifiers are missing
+        if missing_dis:
+            st.error(f"Data identifiers {', and '.join(missing_dis)} are required for a valid code. "
+                     f"Please add these fields", icon="🚨")
+            return False
+        return True
+
+
+@st.cache_data
+def get_config() -> DMCConfig:
+    # read config file
+    return DMCConfig(".streamlit/config.toml")
 
 
 def rstrip_non_ascii_characters(text: str) -> str:
@@ -32,17 +87,30 @@ def create_new_row(di: str = "") -> Dict[str, Union[str, int]]:
     return {"di": di, "content": "", "keys": [create_unique_key() for _ in range(2)]}
 
 
-def draw_input_rows():
+def draw_input_rows(config: DMCConfig):
     # default values
     if "fields" not in st.session_state:
-        st.session_state.fields = [create_new_row()]
+        # initialize with required data identifiers (pick the first one if multiple can be used)
+        required_dis = config.required_dis
+        if len(required_dis) < 1:
+            required_dis = [[""]]  # default value
+
+        st.session_state.fields = [create_new_row(di[0]) for di in required_dis]
+        # print(f"DEBUG: st.session_state.fields: {st.session_state.fields}")
 
     # draw row(s)
     for i, fld in enumerate(st.session_state.fields):
         placeholder = st.empty()
         col1, buff, col2 = st.columns([1, 1, 4])
         with col1:
-            di = st.selectbox("Data Identifier", DMCMessageBuilder().data_identifiers, key=fld["keys"][0])
+            select_options = DMCMessageBuilder().data_identifiers
+            idx = 0
+            if fld["di"] in select_options:
+                idx = select_options.index(fld["di"])
+            di = st.selectbox("Data Identifier", select_options,
+                              index=idx,
+                              key=fld["keys"][0])
+            # print(f"DEBUG: fld['di']: {fld['di']},  di: {di}")
             # draw info message on change
             if st.session_state.explain_data_identifiers:
                 draw_info(di if di != fld["di"] and fld["di"] != "" else None, placeholder)
@@ -52,7 +120,7 @@ def draw_input_rows():
             content = st.text_input("Content", key=fld["keys"][1])
             # strip unexpected non-ascii characters at the end and tailing spaces
             content = rstrip_non_ascii_characters(content).rstrip(" ")
-            print(f"DEBUG: content={content}")
+
             fld["content"] = content
 
             # check code on change
@@ -153,6 +221,32 @@ def draw_options():
                                                                    )
 
 
+def draw_results(img, message_string: str, n_ascii_characters: int):
+    columns = st.columns([5, 1], gap="small")
+
+    with columns[0]:
+        tabs = st.tabs(["Image", "Message String"])
+        with tabs[0]:
+            st.image(img, caption=message_string)
+        with tabs[1]:
+            # st.table({enc: str(message_string.encode(encoding=enc)) for enc in ["UTF-8", "unicode-escape"]})
+            encodings = {"backslash-replace": message_string.encode("utf-8", "backslashreplace").decode("utf-8",
+                                                                                                        "backslashreplace"),
+                         "XML char reference replace": message_string.encode("utf-8", "xmlcharrefreplace").decode(
+                             "utf-8",
+                             "xmlcharrefreplace"),
+                         "named replace": message_string.encode("utf-8", "namereplace").decode("utf-8", "namereplace"),
+                         "hex": binascii.hexlify(message_string.encode("utf-8")),
+                         "base64": binascii.b2a_base64(message_string.encode("utf-8")),
+                         "ord": [ord(el) for el in message_string]
+                         }
+            for enc, string in encodings.items():
+                st.write(f"encoding: {enc}")
+                st.write(string)
+
+    with columns[1]:
+        st.metric("#ASCII characters", n_ascii_characters)
+
 def main():
     # configure page => set favicon and page title
     st.set_page_config(page_title="DMC Generator", page_icon="💡")  #  chr(int(" U+1F4A1"[2:], 16)) # https://emojipedia.org/  chr(int("U+1F6A8"[2:], 16))
@@ -168,7 +262,8 @@ def main():
 
     initialize_options()
 
-    draw_input_rows()
+    config = get_config()
+    draw_input_rows(config)
 
     # add buttons
     columns = st.columns([1, 1, 3, 1], gap="small")
@@ -185,51 +280,35 @@ def main():
 
     draw_options()
 
+    # if button was pressed
     if generate_dmc:
-        with st.spinner(text="generating Data-Matrix-Code ..."):
-            rows = get_rows()
+        # get message fields
+        rows = get_rows()
 
-            message_fields = {fld["di"]: fld["content"] for fld in rows}
-            message_string = DMCMessageBuilder(message_fields, DI_FORMAT).get_message_string(
-                use_message_envelope=st.session_state.use_message_envelope,
-                use_format_envelope=st.session_state.use_format_envelope
-            )
+        message_fields = {fld["di"]: fld["content"] for fld in rows}
+        # check required data identifiers
+        ok = config.check_for_required_dis(message_fields)
 
-            dmc_generator = DMCGenerator(message_string)
-            img = dmc_generator.generate(
-                n_quiet_zone_moduls=st.session_state.n_quiet_zone_moduls,
-                use_rectangular=st.session_state.use_rectangular
-            )
-            n_ascii_characters = dmc_generator.n_compressed_ascii_chars
+        # if requirements were met
+        if ok:
+            # generate data-matrix-code
+            with st.spinner(text="generating Data-Matrix-Code ..."):
+                message_string = DMCMessageBuilder(message_fields, DI_FORMAT).get_message_string(
+                    use_message_envelope=st.session_state.use_message_envelope,
+                    use_format_envelope=st.session_state.use_format_envelope
+                )
 
-
-        # with st.empty():
-        #     st.success('Done!', icon="✅")
-
-        columns = st.columns([5, 1], gap="small")
-
-        with columns[0]:
-            tabs = st.tabs(["Image", "Message String"])
-            with tabs[0]:
-                st.image(img, caption=message_string)
-            with tabs[1]:
-                # st.table({enc: str(message_string.encode(encoding=enc)) for enc in ["UTF-8", "unicode-escape"]})
-                encodings = {"backslash-replace": message_string.encode("utf-8", "backslashreplace").decode("utf-8", "backslashreplace"),
-                             "XML char reference replace": message_string.encode("utf-8", "xmlcharrefreplace").decode("utf-8",
-                                                                                                                   "xmlcharrefreplace"),
-                             "named replace": message_string.encode("utf-8", "namereplace").decode("utf-8", "namereplace"),
-                             "hex": binascii.hexlify(message_string.encode("utf-8")),
-                             "base64": binascii.b2a_base64(message_string.encode("utf-8")),
-                             "ord": [ord(el) for el in message_string]
-                             }
-                for enc, string in encodings.items():
-                    st.write(f"encoding: {enc}")
-                    st.write(string)
-
-        with columns[1]:
-            st.metric("#ASCII characters", n_ascii_characters)
+                dmc_generator = DMCGenerator(message_string)
+                img = dmc_generator.generate(
+                    n_quiet_zone_moduls=st.session_state.n_quiet_zone_moduls,
+                    use_rectangular=st.session_state.use_rectangular
+                )
+                n_ascii_characters = dmc_generator.n_compressed_ascii_chars
+            # display result
+            draw_results(img, message_string, n_ascii_characters)
 
 
 if __name__ == "__main__":
     main()
- # streamlit run App.py
+    # streamlit run App-Data-Matrix-Generator.py
+

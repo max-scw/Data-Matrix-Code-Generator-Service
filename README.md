@@ -2,7 +2,7 @@
 Python-based functions to build, parse message strings according to the ANSI MH-10 standard and generate a Data-Matrix-Code from it wrapped in a mircoservice for a convenient web-frontend.
 
 ## Description
-Python-based microservice to generate Data-Matrix-Codes that use ANSI-MH 10 field identifiers (sometimes also refered to as "data identifiers") and a message and format envelopes of ISO / IEC 15434. 
+Python-based microservice to generate Data-Matrix-Codes that use ANSI-MH 10 field identifiers (sometimes also referred to as "data identifiers") and a message and format envelopes of ISO / IEC 15434. 
 
 The web-service is build on [streamlit](https://streamlit.io/), which is a python-package for building an interactive website and includes also a web server engine.
 
@@ -10,7 +10,7 @@ The web-service is build on [streamlit](https://streamlit.io/), which is a pytho
 The project is ment to be compiled to a Docker container. See Dockerfile for installation instructions.
 
 ### manual
-Install Python 3.9 (or later) and its package management PIP. Create a virtual envoriment; then install the requirements to it
+Install Python 3.9 (or later) and its package management PIP. Create a virtual environment; then install the requirements to it
 ```shell
 pip install -r requirements.txt
 ```
@@ -26,7 +26,7 @@ docker build --tag=dmc-generator/streamlit .
 ```
 Run container
 ```shell
-docker run -d -p 8502:8501 --name=streamlit-dmc-generator dmc-generator/streamlit
+docker run -d -p 8502:8501 --name=stramlit-dmc-generator dmc-generator/streamlit
 ```
 
 
