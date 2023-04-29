@@ -3,6 +3,7 @@ import uuid
 import binascii
 from pip._vendor import tomli as tomllib  # standard in Python 3.11
 from pathlib import Path
+from itertools import chain
 
 from typing import Dict, Union, List, Any
 
@@ -27,7 +28,7 @@ class DMCConfig:
         self.config = config["DMC"] if "DMC" in config else []
 
     @staticmethod
-    def _read_config(path_to_file: Union[str, Path]) -> Union[Dict[str, Any]]:
+    def _read_config(path_to_file: Union[str, Path]) -> Union[Dict[str, Any], dict]:
         path_to_file = Path(path_to_file).with_suffix(".toml")
         if not path_to_file.exists():
             UserWarning(f"Config file {path_to_file.as_posix()} does not exist.")
@@ -37,33 +38,44 @@ class DMCConfig:
             info = tomllib.load(fid)
         return info
 
-    @property
-    def required_dis(self) -> Union[List[List[str]]]:
+    def required_dis(self, flatten: bool = False) -> Union[List[List[str]], list]:
         key = "requiredDataIdentifiers"
         dis = self.config[key] if key in self.config else []
         if dis:
             dis = [di.split("|") for di in dis]
+        if flatten:
+            dis = list(chain.from_iterable(dis))
         return dis
+        
 
-    def check_for_required_dis(self, message_fields: Dict[str, str]) -> bool:
+    def check_for_required_dis(self, data_identifiers: Union[List[str], Dict[str, str]], write_error_msg: bool = True) -> Union[List[List[str]], list]:
+        # process input it it is the entire 
+        if isinstance(data_identifiers, dict):
+            data_identifiers = data_identifiers.keys()
+        
         missing_dis = []
         # loop through required data identifiers
-        for dis in self.required_dis:
+        for dis in self.required_dis():
             # check if this (required) identifier is in the messages
-            if not any([di in message_fields.keys() for di in dis]):
-                missing_dis.append(" or ".join(dis))
+            if not any([di in data_identifiers for di in dis]):
+                missing_dis.append(dis)
         # raise error message if some required data identifiers are missing
-        if missing_dis:
-            st.error(f"Data identifiers {', and '.join(missing_dis)} are required for a valid code. "
+        if missing_dis and write_error_msg:
+            msg = ", and ".join([" or ".join(dis)for dis in missing_dis])
+            st.error(f"Data identifiers {msg} are required for a valid code. "
                      f"Please add these fields", icon="🚨")
-            return False
-        return True
+        return missing_dis
 
 
 @st.cache_data
 def get_config() -> DMCConfig:
+    path_to_config = Path("config.toml")
+    if not path_to_config.exists():
+        # standard path to streamlit config file
+        path_to_config = Path(".streamlit/config.toml")
+
     # read config file
-    return DMCConfig(".streamlit/config.toml")
+    return DMCConfig(path_to_config)
 
 
 def rstrip_non_ascii_characters(text: str) -> str:
@@ -80,28 +92,20 @@ def create_unique_key():
 
 
 def clear_fields():
-    del st.session_state.fields
+    del st.session_state.rows
 
 
-def create_new_row(di: str = "") -> Dict[str, Union[str, int]]:
-    return {"di": di, "content": "", "keys": [create_unique_key() for _ in range(2)]}
 
 
 def draw_input_rows(config: DMCConfig):
-    # default values
-    if "fields" not in st.session_state:
-        # initialize with required data identifiers (pick the first one if multiple can be used)
-        required_dis = config.required_dis
-        if len(required_dis) < 1:
-            required_dis = [[""]]  # default value
-
-        st.session_state.fields = [create_new_row(di[0]) for di in required_dis]
-        # print(f"DEBUG: st.session_state.fields: {st.session_state.fields}")
+    # initialize
+    if "rows" not in st.session_state:
+        st.session_state.rows = Row(config)
 
     # draw row(s)
-    for i, fld in enumerate(st.session_state.fields):
+    for i, fld in enumerate(st.session_state.rows):
         placeholder = st.empty()
-        col1, buff, col2 = st.columns([1, 1, 4])
+        col1, _, col2 = st.columns([1, 1, 4])
         with col1:
             select_options = DMCMessageBuilder().data_identifiers
             idx = 0
@@ -110,10 +114,11 @@ def draw_input_rows(config: DMCConfig):
             di = st.selectbox("Data Identifier", select_options,
                               index=idx,
                               key=fld["keys"][0])
-            # print(f"DEBUG: fld['di']: {fld['di']},  di: {di}")
+
             # draw info message on change
             if st.session_state.explain_data_identifiers:
                 draw_info(di if di != fld["di"] and fld["di"] != "" else None, placeholder)
+            
             fld["di"] = di
 
         with col2:
@@ -131,36 +136,84 @@ def draw_input_rows(config: DMCConfig):
                     st.warning(f"The value '{content}' for data identifier '{di}' does not comply with the format "
                                f"specifications: {FORMAT_MAPPING[di]['Meta Data']}.", icon="⚠️")
 
-
 def draw_info(di: str, placeholder):
     if di:
         with placeholder:
             st.info(f"**{di}**: {FORMAT_MAPPING[di]['Explanation']}", icon="ℹ️")
 
 
-def get_rows() -> List[Dict[str, Union[str, int]]]:
-    # print(f"DEBUG: st.session_state.fields={st.session_state.fields}")
+class Row:
+    def __init__(self, config: DMCConfig):
+        # store config
+        self.config = config
+        # initialize rows
+        if config.required_dis():
+            self.rows = [self._create_new_row(di[0]) for di in config.required_dis()]
+        else:
+            self.rows = [self._create_new_row()]
 
-    # delete empty rows
-    st.session_state.fields = [fld for fld in st.session_state.fields if fld["content"] != ""]
-    print(f"DEBUG: st.session_state.fields={st.session_state.fields} (cleaned for empty rows)")
-    return st.session_state.fields
+    def __iter__(self) -> Dict[str, Any]:
+        for row in self.get_rows():
+            yield row
+
+    @staticmethod
+    def _create_new_row(di: str = "") -> Dict[str, Union[str, int]]:
+        return {"di": di, "content": "", "keys": [create_unique_key() for _ in range(2)]}
+
+    @property
+    def isempty(self) -> List[bool]:
+        return any([self._isemptyrow(el) for el in self.get_nonempty_rows()])
+    
+    @staticmethod
+    def _isemptyrow(row: Dict[str, Any]) -> bool:
+        return row["content"] == "" or row["content"].isspace()
+
+    def get_nonempty_rows(self) -> List[Dict[str, Any]]:
+        return [el for el in self.get_rows() if not self._isemptyrow(el) or el["di"] in self.config.required_dis(True)]
+    
+    @staticmethod
+    def _get_data_identifiers(rows: List[Dict[str, Any]]) -> List[str]:
+        return [fld["di"] for fld in rows]
+    
+    @property
+    def message_fields(self) -> Dict[str, Any]:
+        return {fld["di"]: fld["content"] for fld in self.get_nonempty_rows()}
+    
+    def add_new_row(self) -> bool:
+        # check if any row is empty
+        rows = self.get_nonempty_rows()
+        self.rows = rows
+
+        lg = [self._isemptyrow(el) for el in rows]
+        flag_add_new_row = not any(lg)
+        # check if (non-empty) data identifiers are unique
+        data_identifiers = self._get_data_identifiers(rows)
+        for di in list(set(data_identifiers)):  # convert to set to get a unique list
+            if data_identifiers.count(di) > 1:
+                st.error(f"The data identifier '{di}' is already defined.", icon="🚨")  # chr(int("U+1F6A8"[2:], 16))
+                flag_add_new_row = False
+
+        if flag_add_new_row:
+            self.rows.append(self._create_new_row())
 
 
-def add_new_row():
-    rows = get_rows()
-    # check format of all characters
-    flag_add_new_row = True
-    data_identifiers = [fld["di"] for fld in rows]
-    for di in list(set(data_identifiers)):  # convert to set to get a unique list
-        if data_identifiers.count(di) > 1:
-            st.error(f"The data identifier '{di}' is already defined.", icon="🚨")  # chr(int("U+1F6A8"[2:], 16))
-            flag_add_new_row = False
+        return flag_add_new_row
 
-    if flag_add_new_row:
-        # add to session space
-        st.session_state.fields.append(create_new_row())
-        st.experimental_rerun()
+    def get_rows(self) -> List[Dict[str, Any]]:
+        data_identifiers = self._get_data_identifiers(self.rows)
+        # check requirements
+        missing_dis = self.config.check_for_required_dis(data_identifiers, False)
+        
+        # append missing data_identifiers to list of rows
+        for di in missing_dis:
+            self.rows.append(self._create_new_row(di[0]))
+        return self.rows
+    
+    def update(self, idx: int, di: str = None, content: Union[str, int, float] = None) -> bool:
+        self.rows[idx]["di"] = di
+        self.rows[idx]["content"] = content
+        return True
+            
 
 
 def initialize_options():
@@ -276,21 +329,19 @@ def main():
 
     # add new row
     if add:
-        add_new_row()
+        row_added = st.session_state.rows.add_new_row()
+        # if row_added:
+        st.experimental_rerun()
 
     draw_options()
 
     # if button was pressed
     if generate_dmc:
-        # get message fields
-        rows = get_rows()
-
-        message_fields = {fld["di"]: fld["content"] for fld in rows}
-        # check required data identifiers
-        ok = config.check_for_required_dis(message_fields)
-
-        # if requirements were met
-        if ok:
+        rows = st.session_state.rows
+        # check if no required field is empty
+        print(f"DEBUG: rows.isempty={rows.isempty}")
+        if not rows.isempty:
+            message_fields = rows.message_fields 
             # generate data-matrix-code
             with st.spinner(text="generating Data-Matrix-Code ..."):
                 message_string = DMCMessageBuilder(message_fields, DI_FORMAT).get_message_string(
