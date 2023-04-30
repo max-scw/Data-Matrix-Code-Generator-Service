@@ -95,12 +95,12 @@ def clear_fields():
     del st.session_state.rows
 
 
-
-
 def draw_input_rows(config: DMCConfig):
     # initialize
     if "rows" not in st.session_state:
         st.session_state.rows = Row(config)
+
+    print(f"DEBUG draw_input_rows(): st.session_state.rows.rows={st.session_state.rows.rows}")
 
     # draw row(s)
     for i, fld in enumerate(st.session_state.rows):
@@ -179,6 +179,16 @@ class Row:
     def message_fields(self) -> Dict[str, Any]:
         return {fld["di"]: fld["content"] for fld in self.get_nonempty_rows()}
     
+    def check_for_unique_data_identifiers(self) -> List[str]:
+        non_unique_dis = []
+        # check if (non-empty) data identifiers are unique
+        data_identifiers = self._get_data_identifiers(self.rows)
+        for di in list(set(data_identifiers)):  # convert to set to get a unique list
+            print(f"DEBUG Row().check_for_unique_data_identifiers(): di={di}, data_identifiers.count(di)={data_identifiers.count(di)}")
+            if data_identifiers.count(di) > 1:
+                non_unique_dis.append(di)
+        return non_unique_dis
+    
     def add_new_row(self) -> bool:
         # check if any row is empty
         rows = self.get_nonempty_rows()
@@ -186,16 +196,10 @@ class Row:
 
         lg = [self._isemptyrow(el) for el in rows]
         flag_add_new_row = not any(lg)
-        # check if (non-empty) data identifiers are unique
-        data_identifiers = self._get_data_identifiers(rows)
-        for di in list(set(data_identifiers)):  # convert to set to get a unique list
-            if data_identifiers.count(di) > 1:
-                st.error(f"The data identifier '{di}' is already defined.", icon="🚨")  # chr(int("U+1F6A8"[2:], 16))
-                flag_add_new_row = False
+        # flag_add_new_row |= self.check_for_unique_data_identifiers() == []
 
         if flag_add_new_row:
             self.rows.append(self._create_new_row())
-
 
         return flag_add_new_row
 
@@ -212,8 +216,7 @@ class Row:
     def update(self, idx: int, di: str = None, content: Union[str, int, float] = None) -> bool:
         self.rows[idx]["di"] = di
         self.rows[idx]["content"] = content
-        return True
-            
+        return True 
 
 
 def initialize_options():
@@ -300,6 +303,7 @@ def draw_results(img, message_string: str, n_ascii_characters: int):
     with columns[1]:
         st.metric("#ASCII characters", n_ascii_characters)
 
+
 def main():
     # configure page => set favicon and page title
     st.set_page_config(page_title="DMC Generator", page_icon="💡")  #  chr(int(" U+1F4A1"[2:], 16)) # https://emojipedia.org/  chr(int("U+1F6A8"[2:], 16))
@@ -329,9 +333,16 @@ def main():
 
     # add new row
     if add:
-        row_added = st.session_state.rows.add_new_row()
-        # if row_added:
-        st.experimental_rerun()
+        non_unique_dis = st.session_state.rows.check_for_unique_data_identifiers()
+        if non_unique_dis:
+            for di in non_unique_dis:
+                st.error(f"The data identifier '{di}' is already defined.", icon="🚨")  # chr(int("U+1F6A8"[2:], 16))
+        else:
+            # add new row
+            row_added = st.session_state.rows.add_new_row()
+
+            if row_added:
+                st.experimental_rerun()
 
     draw_options()
 
@@ -339,7 +350,6 @@ def main():
     if generate_dmc:
         rows = st.session_state.rows
         # check if no required field is empty
-        print(f"DEBUG: rows.isempty={rows.isempty}")
         if not rows.isempty:
             message_fields = rows.message_fields 
             # generate data-matrix-code
@@ -362,4 +372,3 @@ def main():
 if __name__ == "__main__":
     main()
     # streamlit run App-Data-Matrix-Generator.py
-
