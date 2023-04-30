@@ -48,7 +48,7 @@ class DMCConfig:
         return dis
         
 
-    def check_for_required_dis(self, data_identifiers: Union[List[str], Dict[str, str]], write_error_msg: bool = True) -> Union[List[List[str]], list]:
+    def check_for_required_dis(self, data_identifiers: Union[List[str], Dict[str, str]]) -> Union[List[List[str]], list]:
         # process input it it is the entire 
         if isinstance(data_identifiers, dict):
             data_identifiers = data_identifiers.keys()
@@ -59,13 +59,14 @@ class DMCConfig:
             # check if this (required) identifier is in the messages
             if not any([di in data_identifiers for di in dis]):
                 missing_dis.append(dis)
-        # raise error message if some required data identifiers are missing
-        if missing_dis and write_error_msg:
-            msg = ", and ".join([" or ".join(dis)for dis in missing_dis])
-            st.error(f"Data identifiers {msg} are required for a valid code. "
-                     f"Please add these fields", icon="🚨")
         return missing_dis
-
+    
+    def isrequireddi(self, data_identifier: str) -> list:
+        for dis in self.required_dis():
+            if data_identifier in dis:
+                return dis
+        return []
+    
 
 @st.cache_data
 def get_config() -> DMCConfig:
@@ -164,6 +165,9 @@ class Row:
     def isempty(self) -> List[bool]:
         return any([self._isemptyrow(el) for el in self.get_nonempty_rows()])
     
+    def get_empty_required_dis(self) -> List[str]:
+        return [el["di"] for el in self.get_rows() if self._isemptyrow(el) and el["di"] in self.config.required_dis(True)]
+    
     @staticmethod
     def _isemptyrow(row: Dict[str, Any]) -> bool:
         return row["content"] == "" or row["content"].isspace()
@@ -202,11 +206,20 @@ class Row:
             self.rows.append(self._create_new_row())
 
         return flag_add_new_row
-
+    
+    def get_required_rows(self) -> List[Union[List[str], None]]:
+        required_empty_ids = []
+        for row in self.get_rows():
+            req_dis = self.config.isrequireddi(row["di"])
+            if req_dis and self._isemptyrow(row["content"]):
+                required_empty_ids.append(req_dis)
+            
+        return required_empty_ids
+    
     def get_rows(self) -> List[Dict[str, Any]]:
         data_identifiers = self._get_data_identifiers(self.rows)
         # check requirements
-        missing_dis = self.config.check_for_required_dis(data_identifiers, False)
+        missing_dis = self.config.check_for_required_dis(data_identifiers)
         
         # append missing data_identifiers to list of rows
         for di in missing_dis:
@@ -343,6 +356,8 @@ def main():
 
             if row_added:
                 st.experimental_rerun()
+            else:
+                st.warning("There is an empty row.", icon="⚠️")
 
     draw_options()
 
@@ -367,6 +382,17 @@ def main():
                 n_ascii_characters = dmc_generator.n_compressed_ascii_chars
             # display result
             draw_results(img, message_string, n_ascii_characters)
+        else:
+            missing_dis = st.session_state.rows.get_empty_required_dis()
+
+            # raise error message if some required data identifiers are empty
+            text = ", and ".join([" or ".join([f"**{el}**" for el in dis]) for dis in missing_dis])
+            if len(missing_dis) > 1:
+                msg = f"Data identifiers {text} are "
+            else:
+                msg = f"Data identifier {text} is "
+            st.error(msg + "required for a valid code and must not be empty.",
+                     icon="🚨")
 
 
 if __name__ == "__main__":
