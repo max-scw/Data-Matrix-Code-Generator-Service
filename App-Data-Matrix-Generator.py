@@ -23,9 +23,12 @@ class DMCConfig:
     whereas '|' signifies an OR, i.e. the data identifier S or T must be present in the code, the identifiers P
     and V required without any other option
     """
-    def __init__(self, path_to_file: Union[str, Path]):
-        config = self._read_config(path_to_file)
-        self.config = config["DMC"] if "DMC" in config else []
+    def __init__(self, path_to_file: Union[str, Path] = None):
+        if path_to_file is None:
+            self.config = None
+        else:
+            config = self._read_config(path_to_file)
+            self.config = config["DMC"] if "DMC" in config else []
 
     @staticmethod
     def _read_config(path_to_file: Union[str, Path]) -> Union[Dict[str, Any], dict]:
@@ -34,22 +37,26 @@ class DMCConfig:
             UserWarning(f"Config file {path_to_file.as_posix()} does not exist.")
             return dict()
         # read file
-        with open(path_to_file, "rb") as fid:
-            info = tomllib.load(fid)
+        print(f"DEBUG: DMCConfig()._read_config(): path_to_file={path_to_file.as_posix()}")
+        with open(path_to_file, "r") as fid:
+            text = fid.read()
+        # Docker doesn't like tomllib to read from binary data...
+        info = tomllib.loads(text)
         return info
 
     def required_dis(self, flatten: bool = False) -> Union[List[List[str]], list]:
         key = "requiredDataIdentifiers"
-        dis = self.config[key] if key in self.config else []
-        if dis:
-            dis = [di.split("|") for di in dis]
-        if flatten:
-            dis = list(chain.from_iterable(dis))
+        dis = []
+        if self.config and key in self.config:
+            dis = self.config[key] if key in self.config else []
+            if dis:
+                dis = [di.split("|") for di in dis]
+            if flatten:
+                dis = list(chain.from_iterable(dis))
         return dis
-        
 
     def check_for_required_dis(self, data_identifiers: Union[List[str], Dict[str, str]]) -> Union[List[List[str]], list]:
-        # process input it it is the entire 
+        # process input if it is the entire
         if isinstance(data_identifiers, dict):
             data_identifiers = data_identifiers.keys()
         
@@ -70,10 +77,15 @@ class DMCConfig:
 
 @st.cache_data
 def get_config() -> DMCConfig:
-    path_to_config = Path("config.toml")
-    if not path_to_config.exists():
-        # standard path to streamlit config file
-        path_to_config = Path(".streamlit/config.toml")
+    file_name = "config.toml"
+    potential_paths = ["", ".streamlit"]
+    for p in potential_paths:
+        path_to_config = Path(p) / file_name
+        print(f"DEBUG: path_to_config={path_to_config.as_posix()}.exists(): {path_to_config.exists()}")
+        if path_to_config.exists():
+            break
+        else:
+            path_to_config = None
 
     # read config file
     return DMCConfig(path_to_config)
@@ -136,6 +148,7 @@ def draw_input_rows(config: DMCConfig):
                 if not flag_valid:
                     st.warning(f"The value '{content}' for data identifier '{di}' does not comply with the format "
                                f"specifications: {FORMAT_MAPPING[di]['Meta Data']}.", icon="⚠️")
+
 
 def draw_info(di: str, placeholder):
     if di:
