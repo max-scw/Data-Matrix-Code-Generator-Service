@@ -23,6 +23,14 @@ class DMCConfig:
     whereas '|' signifies an OR, i.e. the data identifier S or T must be present in the code, the identifiers P
     and V required without any other option
     """
+
+    _default = {"UseMessageEnvelope": True,
+                "UseFormatEnvelope": True,
+                "RectangularDMC": False,
+                "NumberOfQuietZoneModuls": 2,
+                "ExplainDataIdentifiers": True
+                }
+
     def __init__(self, path_to_file: Union[str, Path] = None):
         if path_to_file is None:
             self.config = None
@@ -74,6 +82,15 @@ class DMCConfig:
                 return dis
         return []
     
+    def get_default_values(self, key: str):
+        if key in self.config:
+            return self.config[key]
+        elif key in self._default:
+            return self._default[key]
+        else:
+            raise ValueError(f"Unknown key '{key}' for configuration and default parameters.")
+
+    
 
 @st.cache_data
 def get_config() -> DMCConfig:
@@ -108,12 +125,14 @@ def clear_fields():
     del st.session_state.rows
 
 
-def draw_input_rows(config: DMCConfig):
+def draw_input_rows(config: DMCConfig) -> bool:
     # initialize
     if "rows" not in st.session_state:
         st.session_state.rows = Row(config)
 
     print(f"DEBUG draw_input_rows(): st.session_state.rows.rows={st.session_state.rows.rows}")
+
+    flag_valid = False
 
     # draw row(s)
     for i, fld in enumerate(st.session_state.rows):
@@ -148,6 +167,7 @@ def draw_input_rows(config: DMCConfig):
                 if not flag_valid:
                     st.warning(f"The value '{content}' for data identifier '{di}' does not comply with the format "
                                f"specifications: {FORMAT_MAPPING[di]['Meta Data']}.", icon="⚠️")
+    return flag_valid
 
 
 def draw_info(di: str, placeholder):
@@ -201,7 +221,7 @@ class Row:
         # check if (non-empty) data identifiers are unique
         data_identifiers = self._get_data_identifiers(self.rows)
         for di in list(set(data_identifiers)):  # convert to set to get a unique list
-            print(f"DEBUG Row().check_for_unique_data_identifiers(): di={di}, data_identifiers.count(di)={data_identifiers.count(di)}")
+            #print(f"DEBUG Row().check_for_unique_data_identifiers(): di={di}, data_identifiers.count(di)={data_identifiers.count(di)}")
             if data_identifiers.count(di) > 1:
                 non_unique_dis.append(di)
         return non_unique_dis
@@ -245,25 +265,25 @@ class Row:
         return True 
 
 
-def initialize_options():
+def initialize_options(config: DMCConfig):
     # default values
     if "use_message_envelope" not in st.session_state:
-        st.session_state.use_message_envelope = True
+        st.session_state.use_message_envelope = config.get_default_values("UseMessageEnvelope")
 
     if "use_format_envelope" not in st.session_state:
-        st.session_state.use_format_envelope = False
+        st.session_state.use_format_envelope = config.get_default_values("UseFormatEnvelope")
 
     if "use_rectangular" not in st.session_state:
-        st.session_state.use_rectangular = False
+        st.session_state.use_rectangular = config.get_default_values("RectangularDMC")
 
     if "n_quiet_zone_moduls" not in st.session_state:
-        st.session_state.n_quiet_zone_moduls = 2
+        st.session_state.n_quiet_zone_moduls = config.get_default_values("NumberOfQuietZoneModuls")
 
     if "options_expanded" not in st.session_state:
         st.session_state.options_expanded = False
 
     if "explain_data_identifiers" not in st.session_state:
-        st.session_state.explain_data_identifiers = True
+        st.session_state.explain_data_identifiers = config.get_default_values("ExplainDataIdentifiers")
 
 
 def draw_options():
@@ -343,10 +363,9 @@ def main():
                 """
     st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-    initialize_options()
-
     config = get_config()
-    draw_input_rows(config)
+    initialize_options(config)
+    flag_valid = draw_input_rows(config)
 
     # add buttons
     columns = st.columns([1, 1, 3, 1], gap="small")
@@ -375,7 +394,7 @@ def main():
     draw_options()
 
     # if button was pressed
-    if generate_dmc:
+    if generate_dmc & flag_valid:
         rows = st.session_state.rows
         # check if no required field is empty
         if not rows.isempty:
