@@ -1,9 +1,0 @@
-[theme]
-base = "light"
-primaryColor = "#2D4275"
-
-[browser]
-gatherUsageStats = false
-
-[DMC]
-requiredDataIdentifiers = ["P", "S|T", "V"]
