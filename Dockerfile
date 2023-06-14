@@ -20,6 +20,7 @@ WORKDIR /app
 # Copy the app to the container
 COPY utils/ utils/
 COPY App-Data-Matrix-Generator.py DMCGenerator.py DMCText.py README.md LICENSE ./
+RUN mkdir .streamlit
 COPY config.toml .streamlit/config.toml
 
 # Expose the port
