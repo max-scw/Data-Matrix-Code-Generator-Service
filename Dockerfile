@@ -1,6 +1,15 @@
 FROM python:3.9.16-slim-bullseye
 
-RUN printf "deb https://deb.debian.org/debian bullseye main\ndeb https://security.debian.org/debian-security bullseye-security main\ndeb https://deb.debian.org/debian bullseye-updates main" > /etc/apt/sources.list
+# Metadata
+LABEL author=SCW-MAX
+LABEL version=2023.06
+
+ENV LOGFILE=data-matrix-generator
+
+RUN printf "deb https://deb.debian.org/debian bullseye main \
+    deb https://security.debian.org/debian-security bullseye-security main \
+    deb https://deb.debian.org/debian bullseye-updates main" > /etc/apt/sources.list
+
 
 # Install dependencies
 RUN apt update && \

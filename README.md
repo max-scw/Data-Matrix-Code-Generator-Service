@@ -65,9 +65,12 @@ docker build --tag=dmc-generator/streamlit .
 ```
 Run container
 ```shell
-docker run -d -p 8502:8501 --name=stramlit-dmc-generator dmc-generator/streamlit
+docker run -d -p 8502:8501 --name=streamlit-dmc-generator dmc-generator/streamlit
 ```
-
+with explicit logging to external folder:
+````shell
+docker run -d --volume=/var/log:/app/Log -e LOGFILE=data-matrix-generator-streamlit -e TZ=Europe/Berlin -p 8502:8501 --name=streamlit-dmc-generator dmc-generator/streamlit
+````
 
 
 ## Authors and acknowledgment
@@ -80,5 +83,5 @@ The python library [treepeom](https://github.com/adamchainz/treepoem), which is 
 If there is a way to replace ghostscript, I would be happy to publish the code under a more liberal scheme.
 
 ## Status
-maintenance only
+Beta 
 
