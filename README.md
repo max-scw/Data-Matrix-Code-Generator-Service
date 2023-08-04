@@ -11,19 +11,27 @@ The project is meant to be compiled to a Docker container. See Dockerfile for in
 
 ### Usage
 The initial page shows only the required fields, if any are specified. If not, the initial page consists of a single row (data identifier as drop down menu + input field).
+
 ![initial view](docs/DMC_0.jpg)
+
 Note that you can change the options dynamically when expanding the container "options". The options are stored for the session. The default options can be specified for in the configuration file when starting the streamlit server (for examples see below.)
+
 ![expanded options](docs/DMC_options.jpg)
 
 When selecting a new data identifier, the corresponding explanation is displayed above the row:
+
 ![explain DI](docs/DMC_explanation.jpg)
+
 and a warning is issued when the input does not comply with the expected format.
+
 ![warning](docs/DMC_warning_comply.jpg)
 
 For generating a code simply click the button "generate". A correct message string is created automatically and the number of ASCII characters of this string is displayed next to the image of the code. 
+
 ![generated DMC](docs/DMC_generate.jpg)
 
 Note that no DMC is generated if one leaves one of the required fields empty.
+
 ![error missing required field](docs/DMC_error_missing_field.jpg)
 
 
@@ -65,7 +73,7 @@ docker build --tag=dmc-generator/streamlit .
 ```
 Run container
 ```shell
-docker run -d -p 8502:8501 --name=stramlit-dmc-generator dmc-generator/streamlit
+docker run -d -p 8502:8501 --name=streamlit-dmc-generator dmc-generator/streamlit
 ```
 
 
