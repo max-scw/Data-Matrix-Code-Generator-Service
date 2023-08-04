@@ -1,41 +1,15 @@
 import re
 
-from utils.format_specifications import validate_format
+from .utils import (
+    validate_format,
+    FORMAT_ANSI_MH_10,
+    MESSAGE_ENVELOPE,
+    FORMAT_ENVELOPES,
+    DATA_IDENTIFIERS
+)
 
 from datetime import datetime
-from typing import List, Union, Dict, Tuple, Any
-
-
-# function required for global initialization
-def load_mapping(filename: str) -> Dict[str, Dict[str, str]]:
-    # read file
-    with open(filename, "r") as fid:
-        lines = fid.readlines()
-    # split text in lines
-    data = [ln.strip("\n").split(";") for ln in lines if len(ln) > 5]
-    assert all([len(el) == 3 for el in data]), "File with data identifiers is not correctly formatted. Expected were 3 entries per line."
-
-    # get rid of description:
-    description = data.pop(0)
-
-    # reorganize data
-    mapping = dict()
-    for el in data:
-        meta_data, data_identifier, explanation = el
-        mapping[data_identifier] = {"Meta Data": meta_data, "Explanation": explanation}
-    return mapping
-
-
-# ---------- FORMAT SPECIFICATIONS
-# | ASCII | unicode | html | hex | escape sequence | description
-# | --- | --- | --- | --- | --- | ---
-# | EOT | U+0004 | &#4;  | \x04 | ^D | End Of Transmission
-# | GS  | U+001D | &#29; | \x1d | ^] | Group Separator
-# | RS  | U+001E | &#30; | \x1e | ^^ | Record Separator
-FORMAT_ENVELOPE = {"ANSI-MH-10": {"head": "06\u001D", "tail": "\u001e", "sep": "\u001D"}}
-MESSAGE_ENVELOPE = {"head": "\u005B\u0029\u003E\u001E", "tail": "\u0004"}
-DATA_IDENTIFIERS = {"ANSI-MH-10": {"pattern": r"\d{0,2}[B-Z]",
-                                   "mapping": load_mapping("utils/ANSI-MH-10_DataIdentifiers.txt")}}
+from typing import List, Union, Dict, Any
 
 
 class DMCMessageParser:
@@ -65,7 +39,7 @@ class DMCMessageParser:
     def get_content_of_format_envelopes(self) -> Union[Dict[str, List[str]], str]:
         # extract format
         content = dict()
-        for nm, fmt in FORMAT_ENVELOPE.items():
+        for nm, fmt in FORMAT_ENVELOPES.items():
             # build envelope
             pattern = self._build_envelope_pattern(fmt)
 
@@ -73,12 +47,9 @@ class DMCMessageParser:
             if m:
                 # strip envelop characters from text
                 content[fmt] = [self._strip_envelope_characters(fmt, el) for el in m]
-        # # default output
-        # if content == {}:
-        #     return {"None": self.get_content_of_message_envelope()}
         return content
 
-    def get_content(self, split_fields: bool = True, default_format: str = None) -> Dict[str, List[str]]:
+    def get_content(self, split_fields: bool = True, default_format: str = FORMAT_ANSI_MH_10) -> Dict[str, List[str]]:
         content = self.get_content_of_format_envelopes()
         # add default format if no format envelope is specified
         if content == {}:
@@ -97,7 +68,7 @@ class DMCMessageParser:
         info = dict()
         for fmt, val in env.items():
             # get separator (as regex pattern)
-            sep = re.escape(FORMAT_ENVELOPE[fmt]["sep"])
+            sep = re.escape(FORMAT_ENVELOPES[fmt]["sep"])
             # split content
             info[fmt] = re.split(sep, val)
         return info
@@ -223,16 +194,8 @@ def rais_error_or_warning(message: str, strict: bool, verbose: bool) -> bool:
     return False
 
 
-def parse_dmc(message: str) -> Dict[str, Dict[str, Any]]:
-    """wrapper function"""
-    format_envelopes = DMCMessageParser(message).get_content(default_format="ANSI-MH-10")
-
-    content = dict()
-    for fmt, flds in format_envelopes.items():
-        segmented_flds, fmt_valid = FormatParser(fmt, flds, strict=False, verbose=True).parse(True)
-        content[fmt] = segmented_flds
-
-    return segments
+def put_into_message_envelope(message) -> str:
+    return MESSAGE_ENVELOPE["head"] + message + MESSAGE_ENVELOPE["tail"]
 
 
 class DMCMessageBuilder:
@@ -240,9 +203,9 @@ class DMCMessageBuilder:
 
     def __init__(self,
                  message_fields: Union[Dict[str, Any], List[str], List[str], str] = None,
-                 format: str = "ANSI-MH-10"
+                 message_format: str = FORMAT_ANSI_MH_10
                  ) -> None:
-        self.format = format
+        self.format = message_format
         self.message = self._join_message_fields(message_fields) if message_fields else ""
 
     @property
@@ -250,33 +213,21 @@ class DMCMessageBuilder:
         return list(DATA_IDENTIFIERS[self.format]["mapping"].keys())
 
     @property
-    def msg_head(self) -> str:
-        return MESSAGE_ENVELOPE["head"]
-
-    @property
-    def msg_tail(self) -> str:
-        return MESSAGE_ENVELOPE["tail"]
-
-    @property
     def fmt_head(self) -> str:
-        return FORMAT_ENVELOPE[self.format]["head"]
+        return FORMAT_ENVELOPES[self.format]["head"]
 
     @property
     def fmt_tail(self) -> str:
-        return FORMAT_ENVELOPE[self.format]["tail"]
+        return FORMAT_ENVELOPES[self.format]["tail"]
 
     @property
     def fmt_sep(self) -> str:
-        return FORMAT_ENVELOPE[self.format]["sep"]
+        return FORMAT_ENVELOPES[self.format]["sep"]
 
     def _join_message_fields(self, message_fields) -> str:
         if isinstance(message_fields, dict):
             message_fields = [f"{ky}{val}" for ky, val in message_fields.items()]
         return self.fmt_sep.join(message_fields)
-
-    def put_into_message_envelope(self) -> str:
-        message = self.msg_head + self.message + self.msg_tail
-        return message
 
     def put_into_format_envelope(self) -> str:
         message = self.fmt_head + self.message + self.fmt_tail
@@ -289,7 +240,7 @@ class DMCMessageBuilder:
         if use_format_envelope:
             self.message = self.put_into_format_envelope()
         if use_message_envelope:
-            dmc_string = self.put_into_message_envelope()
+            dmc_string = put_into_message_envelope(self.message)
         else:
             dmc_string = self.message
 
@@ -303,13 +254,13 @@ if __name__ == "__main__":
     dmc_text = "[)>\x1eS123456\x1dV123H48999\x1d18D202312011155\x1d15D24121990\x04"
 
     DMCMessageParser(dmc_text).get_content_of_message_envelope()
-    tmp = DMCMessageParser(dmc_text).get_content(default_format="ANSI-MH-10")
+    tmp = DMCMessageParser(dmc_text).get_content(default_format=FORMAT_ANSI_MH_10)
 
     # input
-    di_format_in = "ANSI-MH-10"
+    di_format_in = FORMAT_ANSI_MH_10
     fields_in = tmp[di_format_in] + ["D_____________________________________"]
 
     segments, flag_valid = FormatParser(di_format_in, fields_in, strict=False, verbose=True).parse(True)
     print(segments)
 
-
+    message_string = DMCMessageBuilder(message_fields="TEST")

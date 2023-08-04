@@ -1,12 +1,12 @@
 import treepoem
 import uuid
-import pathlib as pl
+from pathlib import Path
 from typing import List, Union, Dict, Any
 from PIL import Image, EpsImagePlugin
 import warnings
 import sys
 
-from DMCText import DMCMessageBuilder
+from .DMCText import DMCMessageBuilder
 # mm to point conversion: 2.8346 pt per mm
 
 
@@ -34,8 +34,8 @@ class DMCGenerator:
     def generate(self,
                  n_quiet_zone_moduls: Union[int, None] = None,
                  use_rectangular: bool = False,
-                 file_path: Union[str, pl.Path, None] = None
-                 ) -> Union[Image.Image, pl.Path]:
+                 file_path: Union[str, Path, None] = None
+                 ) -> Union[Image.Image, Path]:
         # options Barcode Writer in Pure Postscript (BWIPP)
         # https://github.com/bwipp/postscriptbarcode/wiki/Data-Matrix
         # TODO: how to specify the modul size in pts?
@@ -60,10 +60,10 @@ class DMCGenerator:
             return self.save_image(img, file_path)
 
     @staticmethod
-    def save_image(img: Image.Image, file_path: Union[str, pl.Path] = None) -> pl.Path:
+    def save_image(img: Image.Image, file_path: Union[str, Path] = None) -> Path:
         # current working directory as default input
         if file_path is None:
-            file_path = pl.Path().cwd()
+            file_path = Path().cwd()
 
         if file_path.is_dir():
             # generate random file name
@@ -150,16 +150,17 @@ class DMCGenerator:
 if __name__ == "__main__":
     if sys.platform.startswith("win") and EpsImagePlugin.gs_windows_binary is False:
         # This is a workaround if pillow cannot find ghostscript
-        path_to_gs = pl.Path(r"C:\Program Files\gs")
+        path_to_gs = Path(r"C:\Program Files\gs")
         if path_to_gs.exists():
             # folder is named to ghostscript version
             path_to_gs = list(path_to_gs.glob("gs*"))[0] / "bin"
             # find if 86 / 64-bit version is installed
             path_to_gs = list(path_to_gs.glob("gswin*c.exe"))[0]
         EpsImagePlugin.gs_windows_binary = path_to_gs / path_to_gs
-    # TODO: strip point in material number
 
-    message_string = DMCMessageBuilder({"S": 123456, "V": "123H48999"}).get_message_string(use_message_envelope=True, use_format_envelope=False)
+    fields = {"S": 123456, "V": "123H48999"}
+    message_string = DMCMessageBuilder(fields).get_message_string(use_message_envelope=True,
+                                                                  use_format_envelope=False)
     img = DMCGenerator(message_string).generate(use_rectangular=False)
     img.show()
     img = DMCGenerator(message_string).generate(use_rectangular=True)
