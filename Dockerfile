@@ -1,15 +1,6 @@
 FROM python:3.9.16-slim-bullseye
 
-# Metadata
-LABEL author=SCW-MAX
-LABEL version=2023.06
-
-ENV LOGFILE=data-matrix-generator
-
-RUN printf "deb https://deb.debian.org/debian bullseye main \
-    deb https://security.debian.org/debian-security bullseye-security main \
-    deb https://deb.debian.org/debian bullseye-updates main" > /etc/apt/sources.list
-
+RUN printf "deb https://deb.debian.org/debian bullseye main\ndeb https://security.debian.org/debian-security bullseye-security main\ndeb https://deb.debian.org/debian bullseye-updates main" > /etc/apt/sources.list
 
 # Install dependencies
 RUN apt update && \
@@ -29,7 +20,6 @@ WORKDIR /app
 # Copy the app to the container
 COPY utils/ utils/
 COPY App-Data-Matrix-Generator.py DMCGenerator.py DMCText.py README.md LICENSE ./
-RUN mkdir .streamlit
 COPY config.toml .streamlit/config.toml
 
 # Expose the port

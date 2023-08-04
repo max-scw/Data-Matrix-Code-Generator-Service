@@ -1,5 +1,4 @@
 import streamlit as st
-
 import uuid
 import binascii
 from pip._vendor import tomli as tomllib  # standard in Python 3.11
@@ -8,64 +7,11 @@ from itertools import chain
 
 from typing import Dict, Union, List, Any
 
-import os
-import logging
-from datetime import datetime
-
 from DMCGenerator import DMCGenerator
 from DMCText import DMCMessageBuilder, FormatParser, DATA_IDENTIFIERS
 
 DI_FORMAT = "ANSI-MH-10"
 FORMAT_MAPPING = DATA_IDENTIFIERS[DI_FORMAT]["mapping"]
-
-
-def init_logging():
-    # instanciate the logger only once
-    # create a custom logger
-    logger = logging.getLogger("DMC-App-Logger")
-    if logger.handlers:  # logger is already setup, don't setup again
-        return
-
-    # logging
-    filename_log = os.environ["LOGFILE"] if "LOGFILE" in os.environ else "log"
-
-    log_file = (Path("Log") / filename_log).with_suffix(".log")
-    print(log_file)
-    if not log_file.parent.exists():
-        log_file.parent.mkdir()
-
-    logger.propagate = False
-    logger.setLevel(logging.INFO)
-    # in the formatter, use the variable "user_ip"
-    formatter = logging.Formatter("%(asctime)s %(levelname)s [user_ip=%(user_ip)s] - %(message)s")
-    handler = logging.FileHandler(filename=log_file, encoding="utf-8")
-    handler.setLevel(logging.INFO)
-    handler.addFilter(ContextFilter())
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
-
-class ContextFilter(logging.Filter):
-    def filter(self, record):
-        record.user_ip = get_remote_ip()
-        return super().filter(record)
-
-
-def get_remote_ip() -> str:
-    """Get remote ip."""
-
-    try:
-        ctx = st.runtime.scriptrunner.get_script_run_ctx()
-        if ctx is None:
-            return None
-
-        session_info = st.runtime.get_instance().get_client(ctx.session_id)
-        if session_info is None:
-            return None
-    except Exception as e:
-        return None
-
-    return session_info.request.remote_ip
 
 
 class DMCConfig:
@@ -77,13 +23,6 @@ class DMCConfig:
     whereas '|' signifies an OR, i.e. the data identifier S or T must be present in the code, the identifiers P
     and V required without any other option
     """
-
-    def __init__(self, path_to_file: Union[str, Path] = None):
-        if path_to_file is None:
-            self.config = None
-        else:
-            config = self._read_config(path_to_file)
-            self.config = config["DMC"] if "DMC" in config else []
 
     _default = {"UseMessageEnvelope": True,
                 "UseFormatEnvelope": True,
@@ -106,7 +45,6 @@ class DMCConfig:
             UserWarning(f"Config file {path_to_file.as_posix()} does not exist.")
             return dict()
         # read file
-
         print(f"DEBUG: DMCConfig()._read_config(): path_to_file={path_to_file.as_posix()}")
         with open(path_to_file, "r") as fid:
             text = fid.read()
@@ -116,7 +54,6 @@ class DMCConfig:
 
     def required_dis(self, flatten: bool = False) -> Union[List[List[str]], list]:
         key = "requiredDataIdentifiers"
-
         dis = []
         if self.config and key in self.config:
             dis = self.config[key] if key in self.config else []
@@ -126,13 +63,11 @@ class DMCConfig:
                 dis = list(chain.from_iterable(dis))
         return dis
 
-    def check_for_required_dis(self, data_identifiers: Union[List[str], Dict[str, str]]) -> Union[
-        List[List[str]], list]:
-
+    def check_for_required_dis(self, data_identifiers: Union[List[str], Dict[str, str]]) -> Union[List[List[str]], list]:
         # process input if it is the entire
         if isinstance(data_identifiers, dict):
             data_identifiers = data_identifiers.keys()
-
+        
         missing_dis = []
         # loop through required data identifiers
         for dis in self.required_dis():
@@ -140,13 +75,13 @@ class DMCConfig:
             if not any([di in data_identifiers for di in dis]):
                 missing_dis.append(dis)
         return missing_dis
-
+    
     def isrequireddi(self, data_identifier: str) -> list:
         for dis in self.required_dis():
             if data_identifier in dis:
                 return dis
         return []
-
+    
     def get_default_values(self, key: str):
         if key in self.config:
             return self.config[key]
@@ -155,6 +90,7 @@ class DMCConfig:
         else:
             raise ValueError(f"Unknown key '{key}' for configuration and default parameters.")
 
+    
 
 @st.cache_data
 def get_config() -> DMCConfig:
@@ -194,7 +130,7 @@ def draw_input_rows(config: DMCConfig) -> bool:
     if "rows" not in st.session_state:
         st.session_state.rows = Row(config)
 
-    # print(f"DEBUG draw_input_rows(): st.session_state.rows.rows={st.session_state.rows.rows}")
+    print(f"DEBUG draw_input_rows(): st.session_state.rows.rows={st.session_state.rows.rows}")
 
     flag_valid = False
 
@@ -214,7 +150,7 @@ def draw_input_rows(config: DMCConfig) -> bool:
             # draw info message on change
             if st.session_state.explain_data_identifiers:
                 draw_info(di if di != fld["di"] and fld["di"] != "" else None, placeholder)
-
+            
             fld["di"] = di
 
         with col2:
@@ -261,36 +197,35 @@ class Row:
     @property
     def isempty(self) -> List[bool]:
         return any([self._isemptyrow(el) for el in self.get_nonempty_rows()])
-
+    
     def get_empty_required_dis(self) -> List[str]:
-        return [el["di"] for el in self.get_rows() if
-                self._isemptyrow(el) and el["di"] in self.config.required_dis(True)]
-
+        return [el["di"] for el in self.get_rows() if self._isemptyrow(el) and el["di"] in self.config.required_dis(True)]
+    
     @staticmethod
     def _isemptyrow(row: Dict[str, Any]) -> bool:
         return row["content"] == "" or row["content"].isspace()
 
     def get_nonempty_rows(self) -> List[Dict[str, Any]]:
         return [el for el in self.get_rows() if not self._isemptyrow(el) or el["di"] in self.config.required_dis(True)]
-
+    
     @staticmethod
     def _get_data_identifiers(rows: List[Dict[str, Any]]) -> List[str]:
         return [fld["di"] for fld in rows]
-
+    
     @property
     def message_fields(self) -> Dict[str, Any]:
         return {fld["di"]: fld["content"] for fld in self.get_nonempty_rows()}
-
+    
     def check_for_unique_data_identifiers(self) -> List[str]:
         non_unique_dis = []
         # check if (non-empty) data identifiers are unique
         data_identifiers = self._get_data_identifiers(self.rows)
         for di in list(set(data_identifiers)):  # convert to set to get a unique list
-
+            #print(f"DEBUG Row().check_for_unique_data_identifiers(): di={di}, data_identifiers.count(di)={data_identifiers.count(di)}")
             if data_identifiers.count(di) > 1:
                 non_unique_dis.append(di)
         return non_unique_dis
-
+    
     def add_new_row(self) -> bool:
         # check if any row is empty
         rows = self.get_nonempty_rows()
@@ -304,30 +239,30 @@ class Row:
             self.rows.append(self._create_new_row())
 
         return flag_add_new_row
-
+    
     def get_required_rows(self) -> List[Union[List[str], None]]:
         required_empty_ids = []
         for row in self.get_rows():
             req_dis = self.config.isrequireddi(row["di"])
             if req_dis and self._isemptyrow(row["content"]):
                 required_empty_ids.append(req_dis)
-
+            
         return required_empty_ids
-
+    
     def get_rows(self) -> List[Dict[str, Any]]:
         data_identifiers = self._get_data_identifiers(self.rows)
         # check requirements
         missing_dis = self.config.check_for_required_dis(data_identifiers)
-
+        
         # append missing data_identifiers to list of rows
         for di in missing_dis:
             self.rows.append(self._create_new_row(di[0]))
         return self.rows
-
+    
     def update(self, idx: int, di: str = None, content: Union[str, int, float] = None) -> bool:
         self.rows[idx]["di"] = di
         self.rows[idx]["content"] = content
-        return True
+        return True 
 
 
 def initialize_options(config: DMCConfig):
@@ -417,8 +352,7 @@ def draw_results(img, message_string: str, n_ascii_characters: int):
 
 def main():
     # configure page => set favicon and page title
-    st.set_page_config(page_title="DMC Generator",
-                       page_icon="💡")  # chr(int(" U+1F4A1"[2:], 16)) # https://emojipedia.org/  chr(int("U+1F6A8"[2:], 16))
+    st.set_page_config(page_title="DMC Generator", page_icon="💡")  #  chr(int(" U+1F4A1"[2:], 16)) # https://emojipedia.org/  chr(int("U+1F6A8"[2:], 16))
     st.title("Data-Matrix-Code Service")
     # hide "made with Streamlit" text in footer
     hide_streamlit_style = """
@@ -430,7 +364,6 @@ def main():
     st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
     config = get_config()
-
     initialize_options(config)
     flag_valid = draw_input_rows(config)
 
@@ -461,12 +394,11 @@ def main():
     draw_options()
 
     # if button was pressed
-
     if generate_dmc & flag_valid:
         rows = st.session_state.rows
         # check if no required field is empty
         if not rows.isempty:
-            message_fields = rows.message_fields
+            message_fields = rows.message_fields 
             # generate data-matrix-code
             with st.spinner(text="generating Data-Matrix-Code ..."):
                 message_string = DMCMessageBuilder(message_fields, DI_FORMAT).get_message_string(
@@ -480,10 +412,6 @@ def main():
                     use_rectangular=st.session_state.use_rectangular
                 )
                 n_ascii_characters = dmc_generator.n_compressed_ascii_chars
-
-                msg = f"message_string={message_string.encode('utf-8', 'backslashreplace')} | "\
-                      f"n_ascii_characters={n_ascii_characters}"
-                logger.info(msg)
             # display result
             draw_results(img, message_string, n_ascii_characters)
         else:
@@ -500,8 +428,5 @@ def main():
 
 
 if __name__ == "__main__":
-    init_logging()
-    logger = logging.getLogger("DMC-App-Logger")
     main()
-
     # streamlit run App-Data-Matrix-Generator.py
