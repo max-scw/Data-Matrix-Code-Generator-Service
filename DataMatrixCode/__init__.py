@@ -9,7 +9,8 @@ from .DMCGenerator import DMCGenerator, generate_dmc_from_string
 from .DMC import (
     DataMatrixCode, 
     generate_dmc, 
-    parse_dmc
+    parse_dmc,
+    validate_format
 )
 
 from .utils import (
