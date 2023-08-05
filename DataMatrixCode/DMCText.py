@@ -245,7 +245,7 @@ class DMCMessageBuilder:
             raise Warning(f"String '{dmc_string}' is not a pure ASCII string.")
 
         self.__dmc_string = dmc_string
-        return self.dmc_string
+        return self.__dmc_string
     
     def get_message_string(self, **kwargs) -> str:
         if self.__dmc_string is None:

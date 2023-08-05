@@ -91,7 +91,7 @@ class DMCGenerator:
 
         n_rows, n_cols = 0, 0
         for cap, n_rows, n_cols in zip(binary_capacity, height, width):
-            if cap >= self.n_compressed_ascii_chars:
+            if cap >= n_compressed_ascii_chars:
                 break
         if n_rows > 16:
             warnings.warn('Data-matrix code rectangular extended (DMRE) version used. '

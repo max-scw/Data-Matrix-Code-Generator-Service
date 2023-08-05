@@ -91,8 +91,9 @@ def generate_dmc(data: MessageData, file_path: Union[str, Path] = None) -> Union
     """wrapper"""
     args = {
         "n_quiet_zone_moduls": data.n_quiet_zone_moduls,
-        "use_rectangular": data.rectangular_dmc,
-        "use_format_envelope": data.use_format_envelope
+        "rectangular_dmc": data.rectangular_dmc,
+        "use_format_envelope": data.use_format_envelope,
+        "use_message_envelope": data.use_message_envelope
     }
     if file_path:
         args["file_path"] = file_path
