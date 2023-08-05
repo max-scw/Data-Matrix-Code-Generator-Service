@@ -3,10 +3,8 @@ import re
 from .utils import (
     validate_format,
     FORMAT_ANSI_MH_10,
-    MESSAGE_ENVELOPE,
-    FORMAT_ENVELOPES,
-    DATA_IDENTIFIERS
-)
+    message_formats
+    )
 
 from datetime import datetime
 from typing import List, Union, Dict, Any
@@ -26,7 +24,7 @@ class DMCMessageParser:
 
     def get_content_of_message_envelope(self) -> str:
         # build envelope
-        pattern = self._build_envelope_pattern(MESSAGE_ENVELOPE)
+        pattern = self._build_envelope_pattern(message_formats().get_message_envelope())
 
         m = re.match(pattern, self.text)
         if not m:
@@ -34,12 +32,12 @@ class DMCMessageParser:
                              f"(A message envelope is required according to ISO / IEC 15434.)")
         else:
             # strip envelop characters from text
-            return self._strip_envelope_characters(MESSAGE_ENVELOPE, m.group())
+            return self._strip_envelope_characters(message_formats().get_message_envelope(), m.group())
 
     def get_content_of_format_envelopes(self) -> Union[Dict[str, List[str]], str]:
         # extract format
         content = dict()
-        for nm, fmt in FORMAT_ENVELOPES.items():
+        for nm, fmt in message_formats().get_formats():
             # build envelope
             pattern = self._build_envelope_pattern(fmt)
 
@@ -68,7 +66,7 @@ class DMCMessageParser:
         info = dict()
         for fmt, val in env.items():
             # get separator (as regex pattern)
-            sep = re.escape(FORMAT_ENVELOPES[fmt]["sep"])
+            sep = re.escape(message_formats(fmt).get_envelope()["sep"])
             # split content
             info[fmt] = re.split(sep, val)
         return info
@@ -76,11 +74,10 @@ class DMCMessageParser:
 
 class FormatParser:
     def __init__(self, di_format: str, fields: List[str], strict: bool = True, verbose: bool = False) -> None:
-        if di_format not in DATA_IDENTIFIERS:
-            raise ValueError
-        self.di_format = di_format
-        self.di_mapping = DATA_IDENTIFIERS[di_format]["mapping"]
-        self.di_pattern = DATA_IDENTIFIERS[di_format]["pattern"]
+        msg_formats = message_formats(di_format)
+        self.di_format = msg_formats.di_format
+        self.di_mapping = msg_formats.get_di_mapping()
+        self.di_pattern = msg_formats.get_di_pattern()
 
         self.fields = fields
         self.strict = strict
@@ -195,34 +192,34 @@ def rais_error_or_warning(message: str, strict: bool, verbose: bool) -> bool:
 
 
 def put_into_message_envelope(message) -> str:
-    return MESSAGE_ENVELOPE["head"] + message + MESSAGE_ENVELOPE["tail"]
+    return message_formats().get_message_envelope("head") + message + message_formats().get_message_envelope("tail")
 
 
 class DMCMessageBuilder:
-    dmc_string = None
+    __dmc_string = None
 
     def __init__(self,
                  message_fields: Union[Dict[str, Any], List[str], List[str], str] = None,
                  message_format: str = FORMAT_ANSI_MH_10
                  ) -> None:
-        self.format = message_format
+        self.message_format = message_formats(message_format)
         self.message = self._join_message_fields(message_fields) if message_fields else ""
 
     @property
     def data_identifiers(self) -> List[str]:
-        return list(DATA_IDENTIFIERS[self.format]["mapping"].keys())
+        return list(self.message_format.get_di_mapping().keys())
 
     @property
     def fmt_head(self) -> str:
-        return FORMAT_ENVELOPES[self.format]["head"]
+        return self.message_format.get_envelope("head")
 
     @property
     def fmt_tail(self) -> str:
-        return FORMAT_ENVELOPES[self.format]["tail"]
+        return self.message_format.get_envelope("tail")
 
     @property
     def fmt_sep(self) -> str:
-        return FORMAT_ENVELOPES[self.format]["sep"]
+        return self.message_format.get_envelope("sep")
 
     def _join_message_fields(self, message_fields) -> str:
         if isinstance(message_fields, dict):
@@ -233,10 +230,10 @@ class DMCMessageBuilder:
         message = self.fmt_head + self.message + self.fmt_tail
         return message
 
-    def get_message_string(self,
-                           use_format_envelope: bool = False,
-                           use_message_envelope: bool = True
-                           ) -> str:
+    def build_message_string(self,
+                             use_format_envelope: bool = False,
+                             use_message_envelope: bool = True
+                             ) -> str:
         if use_format_envelope:
             self.message = self.put_into_format_envelope()
         if use_message_envelope:
@@ -247,8 +244,30 @@ class DMCMessageBuilder:
         if not dmc_string.isascii():
             raise Warning(f"String '{dmc_string}' is not a pure ASCII string.")
 
-        return dmc_string
+        self.__dmc_string = dmc_string
+        return self.dmc_string
+    
+    def get_message_string(self, **kwargs) -> str:
+        if self.__dmc_string is None:
+            self.build_message_string(**kwargs)
+        
+        return self.__dmc_string
+    
+    @property
+    def n_ascii_characters(self) -> int:
+        return count_compressed_ascii_characters(self.get_message_string())
 
+
+def count_compressed_ascii_characters(msg: str) -> int:
+    n = 0
+    last_char_was_reduced = False
+    for i in range(len(msg)):
+        if not last_char_was_reduced and (msg[i].isnumeric() and msg[i - 1].isnumeric()):
+            last_char_was_reduced = True
+        else:
+            n += 1
+            last_char_was_reduced = False
+    return n
 
 if __name__ == "__main__":
     dmc_text = "[)>\x1eS123456\x1dV123H48999\x1d18D202312011155\x1d15D24121990\x04"

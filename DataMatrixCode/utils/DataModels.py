@@ -13,14 +13,6 @@ class MessageFormatEnvelope(BaseModel):
     fields: Dict[str, MessageRaw]
 
 
-# class MessageData(BaseModel):
-#     # fields
-#     fields: Union[str, MessageRaw, MessageFormatEnvelope]
-#     # formatting / appearance / options
-#     rectangular_dmc:  Optional[bool] = False
-#     n_quiet_zone_moduls: Optional[int] = 2
-
-
 class EnvelopeData(BaseModel):
     format: Optional[str] = FORMAT_ANSI_MH_10
     fields: Dict[str, Union[str, int, float, datetime]]
@@ -31,7 +23,8 @@ class MessageData(BaseModel):
     # formatting / appearance / options
     rectangular_dmc:  Optional[bool] = False
     n_quiet_zone_moduls: Optional[int] = 2
-    use_format_envelope:  Optional[bool] = True
+    use_format_envelope:  Optional[bool] = False
+    use_message_envelope:  Optional[bool] = True
 
 
 def envelope_data_to_dict(data: EnvelopeData) -> dict:

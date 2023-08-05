@@ -10,8 +10,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.background import BackgroundTask
 # import uvicorn
 
-from DataMatrixCode import generate_dmc, parse_dmc, MessageData, FORMAT_ANSI_MH_10
-
+from DataMatrixCode import generate_dmc, generate_dmc_from_string, parse_dmc, MessageData, FORMAT_ANSI_MH_10
 
 from typing import Union, Dict
 
@@ -26,10 +25,21 @@ list_of_temp_files = []
 MAX_NUM_TEMP_FILES = 50
 DI_FORMAT = FORMAT_ANSI_MH_10
 
+FROM_JSON = "/from-json"
+FROM_TEXT = "/from-text"
+
 ENTRYPOINT_DMC_GENERATOR_API = '/generate'
-ENTRYPOINT_DMC_GENERATOR_API_MESSAGE = ENTRYPOINT_DMC_GENERATOR_API + '/from-message'
-ENTRYPOINT_DMC_GENERATOR_API_JSON = ENTRYPOINT_DMC_GENERATOR_API + '/from-json'
+ENTRYPOINT_DMC_GENERATOR_API_MESSAGE = "/message" # TODO
+ENTRYPOINT_DMC_GENERATOR_API_MESSAGE_FROM_JSON = ENTRYPOINT_DMC_GENERATOR_API_MESSAGE + FROM_JSON # TODO
+ENTRYPOINT_DMC_GENERATOR_API_IMAGE = "/image"
+ENTRYPOINT_DMC_GENERATOR_API_IMAGE_FROM_TEXT = ENTRYPOINT_DMC_GENERATOR_API_IMAGE + FROM_TEXT
+ENTRYPOINT_DMC_GENERATOR_API_IMAGE_FROM_JSON = ENTRYPOINT_DMC_GENERATOR_API_IMAGE + FROM_JSON
+ENTRYPOINT_DMC_GENERATOR_API_COUNT = '/count-ascii-characters' # TODO
+ENTRYPOINT_DMC_GENERATOR_API_COUNT_FROM_TEXT = ENTRYPOINT_DMC_GENERATOR_API_COUNT + FROM_TEXT # TODO
+ENTRYPOINT_DMC_GENERATOR_API_COUNT_FROM_JSON = ENTRYPOINT_DMC_GENERATOR_API_COUNT + FROM_JSON # TODO
+
 ENTRYPOINT_DMC_GENERATOR_API_PARSER = '/parser'
+
 
 # create endpoint for prometheus: /metrics
 Instrumentator().instrument(app).expose(app)
@@ -76,11 +86,14 @@ async def home_generator():
     return INFO
 
 
-def return_dmc(data: MessageData):
+def dmc_as_fileresponse(data: MessageData, **kwargs):
     """wrapper to return a FileResponse"""
 
     try:
-        img_path = generate_dmc(data, file_path=IMAGE_FOLDER)
+        if isinstance(data, str):
+            img_path = generate_dmc_from_string(data, file_path=IMAGE_FOLDER, **kwargs)
+        else:
+            img_path = generate_dmc(data, file_path=IMAGE_FOLDER)
     except Exception as ex:
         detail = ex.message if hasattr(ex, 'message') else f"{type(ex).__name__}: {ex}"
         raise HTTPException(status_code=400, detail=detail)
@@ -102,17 +115,15 @@ Content-Type: images/png; charset=UTF-8
 
 
 # ----- API: single message string
-@app.get(ENTRYPOINT_DMC_GENERATOR_API_MESSAGE)
-async def generate_dmc_from_string(text: str, rectangular_dmc: bool = None, n_quiet_zone_moduls: int = None):
-    options = dict()
-    if rectangular_dmc is not None:
-        options["rectangular_dmc"] = rectangular_dmc
-    if n_quiet_zone_moduls is not None:
-        options["n_quiet_zone_moduls"] = n_quiet_zone_moduls
+@app.get(ENTRYPOINT_DMC_GENERATOR_API_IMAGE_FROM_TEXT)
+async def generate_dmc_from_text(
+    text: str, 
+    rectangular_dmc: bool = False, 
+    n_quiet_zone_moduls: int = 2,
+    ):  # -> FileResponse
+    
+    return dmc_as_fileresponse(data=text, rectangular_dmc=rectangular_dmc, n_quiet_zone_moduls=n_quiet_zone_moduls,)
 
-    data = MessageData(fields=text, **options)
-
-    return return_dmc(data)
 
 
 # ----- API: from JSON object
@@ -131,12 +142,12 @@ async def generate_dmc_from_string(text: str, rectangular_dmc: bool = None, n_qu
 # """
 
 
-@app.post(ENTRYPOINT_DMC_GENERATOR_API_JSON)
+@app.post(ENTRYPOINT_DMC_GENERATOR_API_IMAGE_FROM_JSON)
 async def generate_dmc_from_json(data: MessageData) -> FileResponse:
     if not data:
         raise HTTPException(status_code=400, detail="Input data cannot be empty.")
 
-    return return_dmc(data)
+    return dmc_as_fileresponse(data)
 
 
 # @app.head(ENTRYPOINT_DMC_GENERATOR_API_JSON)

@@ -1,10 +1,8 @@
 from .format_specifications import validate_format
 
 from .formats import (
-    MESSAGE_ENVELOPE,
-    FORMAT_ENVELOPES,
-    DATA_IDENTIFIERS,
-    FORMAT_ANSI_MH_10
+    FORMAT_ANSI_MH_10,
+    message_formats,
 )
 
 from .DataModels import (

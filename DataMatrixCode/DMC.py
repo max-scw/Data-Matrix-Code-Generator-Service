@@ -1,18 +1,25 @@
 from .utils import MessageData, message_data_to_list, EnvelopeData
 
-from .DMCText import DMCMessageParser, FormatParser, DMCMessageBuilder, put_into_message_envelope
-from .DMCGenerator import DMCGenerator
+from .DMCText import DMCMessageParser, FormatParser, DMCMessageBuilder, put_into_message_envelope, count_compressed_ascii_characters
+from .DMCGenerator import generate_dmc_from_string
 
 from typing import Union, Dict, List
 from pathlib import Path
 from PIL import Image
 
 
-class DMC:
-    def __init__(self, data: Union[List[dict], dict], use_format_envelope: bool, **kwargs):
-        self.use_format_envelope = use_format_envelope
-        self._kwargs = kwargs
+class DataMatrixCode:
+    __dmc_string = None
 
+    def __init__(self, 
+                 data: Union[List[dict], dict], 
+                 use_format_envelope: bool, 
+                 use_message_envelope: bool,
+                 **kwargs):
+        self.use_format_envelope = use_format_envelope
+        self.use_message_envelope = use_message_envelope
+        self._kwargs = kwargs
+        # TODO: format!
         self.data = data if isinstance(data, list) else [data]
 
     @staticmethod
@@ -30,6 +37,11 @@ class DMC:
         return validate_format(envelopes)
 
     def get_message(self) -> str:
+        if self.__dmc_string is None:
+            self.__dmc_string = self.__get_message()
+        return self.__dmc_string
+
+    def __get_message(self) -> str:
         envelopes = self._process_messages(self.data)
 
         # ensure that format envelopes are used if there are more than two (format) envelopes
@@ -38,19 +50,25 @@ class DMC:
         message_string = ""
         for fmt, flds in envelopes.items():
             builder = DMCMessageBuilder(message_fields=flds, message_format=fmt)
-            message_string += builder.get_message_string(use_message_envelope=False,
+            message_string += builder.get_message_string(use_message_envelope=self.use_message_envelope,
                                                          use_format_envelope=self.use_format_envelope)
 
         content_string = put_into_message_envelope(message_string)
         return content_string
+    
+    @property
+    def n_ascii_characters(self) -> int:
+        return count_compressed_ascii_characters(self.get_message())
 
     def generate_image(self):
         content_string = self.get_message()
-        return DMCGenerator(content_string).generate(**self._kwargs)
+        return generate_dmc_from_string(
+            content_string=content_string,
+            **self._kwargs
+            )
 
 
 def validate_format(envelopes: dict) -> dict:
-
     def _fields_to_message(fields: dict) -> List[str]:
         return [f"{ky}{val}" for ky, val in fields.items()]
 
@@ -80,7 +98,7 @@ def generate_dmc(data: MessageData, file_path: Union[str, Path] = None) -> Union
         args["file_path"] = file_path
 
     fields = message_data_to_list(data)
-    return DMC(data=fields, **args).generate_image()
+    return DataMatrixCode(data=fields, **args).generate_image()
 
 
 def parse_dmc(text: str, check_format: bool = True) -> Dict[str, List[str]]:

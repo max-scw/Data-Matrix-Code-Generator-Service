@@ -6,14 +6,13 @@ from PIL import Image, EpsImagePlugin
 import warnings
 import sys
 
-from .DMCText import DMCMessageBuilder
+from .DMCText import DMCMessageBuilder, count_compressed_ascii_characters
 # mm to point conversion: 2.8346 pt per mm
 
 
 class DMCGenerator:
     def __init__(self, message: Union[str, List[str]] = None, modul_size_pt: int = 4) -> None:
         self.message = ''.join([c for c in message if c.isascii()])
-        self.n_compressed_ascii_chars = self.count_compressed_ascii_characters(self.message)
         self.modul_size_pt = modul_size_pt
 
     def __repr__(self):
@@ -33,14 +32,14 @@ class DMCGenerator:
 
     def generate(self,
                  n_quiet_zone_moduls: Union[int, None] = None,
-                 use_rectangular: bool = False,
+                 rectangular_dmc: bool = False,
                  file_path: Union[str, Path, None] = None
                  ) -> Union[Image.Image, Path]:
         # options Barcode Writer in Pure Postscript (BWIPP)
         # https://github.com/bwipp/postscriptbarcode/wiki/Data-Matrix
         # TODO: how to specify the modul size in pts?
 
-        if use_rectangular:
+        if rectangular_dmc:
             barcode_type = 'datamatrixrectangularextension'
             options = {'version': self.compact_rectangular_dmc_format()}
         else:
@@ -88,6 +87,8 @@ class DMCGenerator:
         # binary_capacity = [3, 8, 14, 20, 30, 47]
         # height = [8, 8, 12, 12, 16, 16]
         # length = [18, 32, 26, 36, 36, 48]
+        n_compressed_ascii_chars = count_compressed_ascii_characters(self.message)
+
         n_rows, n_cols = 0, 0
         for cap, n_rows, n_cols in zip(binary_capacity, height, width):
             if cap >= self.n_compressed_ascii_chars:
@@ -98,18 +99,6 @@ class DMCGenerator:
 
         # print(f'{n_chars} => {n_rows}x{n_cols}')
         return f'{n_rows}x{n_cols}'
-
-    @staticmethod
-    def count_compressed_ascii_characters(msg: str) -> int:
-        n = 0
-        last_char_was_reduced = False
-        for i in range(len(msg)):
-            if not last_char_was_reduced and (msg[i].isnumeric() and msg[i - 1].isnumeric()):
-                last_char_was_reduced = True
-            else:
-                n += 1
-                last_char_was_reduced = False
-        return n
 
     @staticmethod
     def determine_modul_size_from_image(img: Image) -> int:
@@ -145,6 +134,10 @@ class DMCGenerator:
         else:
             img_pad = img
         return img_pad
+    
+# wrapper
+def generate_dmc_from_string(content_string: str, **kwargs) -> Union[Image.Image, Path]:
+    return DMCGenerator(content_string).generate(**kwargs)
 
 
 if __name__ == "__main__":
@@ -161,7 +154,7 @@ if __name__ == "__main__":
     fields = {"S": 123456, "V": "123H48999"}
     message_string = DMCMessageBuilder(fields).get_message_string(use_message_envelope=True,
                                                                   use_format_envelope=False)
-    img = DMCGenerator(message_string).generate(use_rectangular=False)
+    img = DMCGenerator(message_string).generate(rectangular_dmc=False)
     img.show()
-    img = DMCGenerator(message_string).generate(use_rectangular=True)
+    img = DMCGenerator(message_string).generate(rectangular_dmc=True)
     img.show()
