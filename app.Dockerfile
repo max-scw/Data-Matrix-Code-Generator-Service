@@ -29,10 +29,10 @@ RUN pip install -r requirements.txt --no-cache-dir
 WORKDIR /app
 
 # Copy the app to the container
-COPY DataMatrixCode/ ./
-COPY .app-main.py README.md LICENSE ./
+COPY DataMatrixCode/ ./DataMatrixCode/
+COPY app-main.py README.md LICENSE ./
 RUN mkdir .streamlit
-COPY config.toml .streamlit/config.toml
+COPY .streamlit/config.toml .streamlit/config.toml
 
 # Expose the port
 EXPOSE 8501

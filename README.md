@@ -31,8 +31,8 @@ You can access the services now in your webbrowser on the default ports: http://
 #### Docker
 Build docker container based on Python3.9
 ```shell
-docker build --tag=dmc-generator/api -f api-Dockerfile .
-docker build --tag=dmc-generator/app -f app-Dockerfile .
+docker build --tag=dmc-generator/api -f api.Dockerfile .
+docker build --tag=dmc-generator/app -f app.Dockerfile .
 ```
 Run containers
 ```shell

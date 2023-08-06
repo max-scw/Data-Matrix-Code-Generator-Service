@@ -11,7 +11,7 @@ from DataMatrixCode import (
     MessageData, 
     DataMatrixCode, 
     FormatParser, 
-    validate_format
+    validate_envelope_format
 )
 
 from typing import Dict, Union, List, Any
@@ -173,7 +173,7 @@ def draw_input_rows(config: DMCConfig) -> bool:
             if content:
                 # segments, flag_valid = FormatParser(DI_FORMAT, [di + content],
                 #                                     strict=False, verbose=False).parse()
-                segments, flag_valid = validate_format({DI_FORMAT: [di + content]})
+                segments, flag_valid = validate_envelope_format({DI_FORMAT: [di + content]})
                 if not flag_valid:
                     st.warning(f"The value '{content}' for data identifier '{di}' does not comply with the format "
                                f"specifications: {FORMAT_MAPPING[di]['Meta Data']}.", icon="⚠️")
@@ -416,11 +416,11 @@ def main():
                     use_message_envelope=st.session_state.use_message_envelope,
                     use_format_envelope=st.session_state.use_format_envelope,
                     n_quiet_zone_moduls=st.session_state.n_quiet_zone_moduls,
-                    use_rectangular=st.session_state.use_rectangular
+                    rectangular_dmc=st.session_state.use_rectangular
                     )
                 dmc.get_message()
                 message_string = dmc.get_message()
-                n_ascii_characters = dmc.n_compressed_ascii_chars
+                n_ascii_characters = dmc.n_ascii_characters
                 img = dmc.generate_image()
             # display result
             draw_results(img, message_string, n_ascii_characters)
