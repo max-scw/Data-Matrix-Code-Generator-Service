@@ -131,6 +131,9 @@ dmypy.json
 
 # custom exclude
 docs/ogl/*
+docs/api/ogl/*
+docs/app/ogl/*
+docs/ogl*
 .idea
 */mve.py
 mve.py
