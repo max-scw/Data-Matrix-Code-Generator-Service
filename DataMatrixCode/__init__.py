@@ -12,7 +12,7 @@ from .DMC import (
     generate_message_string,
     count_compressed_ascii_characters as count_ascii_characters,
     parse_dmc,
-    validate_format
+    validate_envelope_format
 )
 
 from .utils import (

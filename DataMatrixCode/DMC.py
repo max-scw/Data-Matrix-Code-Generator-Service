@@ -40,8 +40,8 @@ class DataMatrixCode:
                         envelopes[fmt][ky] = val
                 else:
                     envelopes[fmt] = flds
-
-        return validate_format(envelopes)
+        valid_content, _ = validate_envelope_format(envelopes)
+        return valid_content
 
     def get_message(self) -> str:
         if self.__dmc_string is None:
@@ -50,7 +50,7 @@ class DataMatrixCode:
 
     def __get_message(self) -> str:
         envelopes = self._process_messages(self.data)
-
+        print(f"DEBUG: envelopes={envelopes}")
         # ensure that format envelopes are used if there are more than two (format) envelopes
         self.use_format_envelope |= (len(envelopes) > 1)
 
@@ -75,10 +75,11 @@ class DataMatrixCode:
             )
 
 
-def validate_format(envelopes: dict) -> dict:
+def validate_envelope_format(envelopes: dict) -> (dict, bool):
     def _fields_to_message(fields: dict) -> List[str]:
         return [f"{ky}{val}" for ky, val in fields.items()]
 
+    format_not_valid = False
     valid_envelopes = dict()
     for fmt, flds in envelopes.items():
         if isinstance(flds, dict):
@@ -86,12 +87,15 @@ def validate_format(envelopes: dict) -> dict:
         elif isinstance(flds, list):
             messages = flds
         else:
-            raise ValueError
+            raise ValueError(f"Unexpected input type {type(flds)}.")
         segments, segment_valid = FormatParser(fmt, messages, strict=False, verbose=False).parse(True)
+        
+        format_not_valid |= (not segment_valid)
         # keep only valid envelopes
         valid_envelopes[fmt] = {el["data_identifier"]: el["content"] for el in segments if el["code_valid"]}
 
-    return valid_envelopes
+    all_formats_valid = not format_not_valid
+    return valid_envelopes, all_formats_valid
 
 
 def generate_dmc(data: MessageData, file_path: Union[str, Path] = None) -> Union[Image.Image, Path]:
@@ -123,7 +127,7 @@ def generate_message_string(data: MessageData) -> str:
 def parse_dmc(text: str, check_format: bool = True) -> Dict[str, List[str]]:
     content = DMCMessageParser(text).get_content()
     if check_format:
-        content = validate_format(content)
+        content, _ = validate_envelope_format(content)
     return content
 
 
