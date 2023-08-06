@@ -1,0 +1,33 @@
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  standard:
+    format: "%(asctime)s - %(levelname)s - %(message)s"
+  logformatter:
+    format: "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s"
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: standard
+    stream: ext://sys.stdout
+  file:
+    class: logging.handlers.RotatingFileHandler
+    formatter: logformatter
+    filename: log.log
+    maxBytes: 1024
+    backupCount: 3
+
+loggers:
+  uvicorn:
+    error:
+      propagate: true
+
+root:
+  level: INFO
+  handlers: [console, file]
+  propagate: no
+
+# https://docs.python.org/3/library/logging.config.html
+# https://stackoverflow.com/questions/13733552/logger-configuration-to-log-to-file-and-print-to-stdout
