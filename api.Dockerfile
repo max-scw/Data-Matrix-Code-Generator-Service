@@ -27,7 +27,7 @@ COPY .api-main.py api-logging_config.yml README.md LICENSE ./
 
 
 # Expose the port
-EXPOSE 5000
+EXPOSE 8000
 	
-CMD ["uvicorn", "api-main:app", "--host=0.0.0.0", "--port=5000", "--log-config", "api-logging_config.yml"]
+CMD ["uvicorn", "api-main:api", "--host=0.0.0.0", "--port=8000", "--log-config", "api-logging_config.yml"]
 

@@ -25,10 +25,10 @@ from typing import Union, Dict
 import logging
 
 
-app = FastAPI()
+api = FastAPI()
 IMAGE_FOLDER = Path("images")
 IMAGE_FOLDER.mkdir(parents=True, exist_ok=True)
-app.mount('/images', StaticFiles(directory=IMAGE_FOLDER), name='static')
+api.mount('/images', StaticFiles(directory=IMAGE_FOLDER), name='static')
 list_of_temp_files = []
 MAX_NUM_TEMP_FILES = 50
 DI_FORMAT = FORMAT_ANSI_MH_10
@@ -52,7 +52,7 @@ ENTRYPOINT_DMC_GENERATOR_API_PARSER_FROM_TEXT = ENTRYPOINT_DMC_GENERATOR_API_PAR
 
 
 # create endpoint for prometheus: /metrics
-Instrumentator().instrument(app).expose(app)
+Instrumentator().instrument(api).expose(api)
 
 # ----- Program info
 INFO = {
@@ -67,7 +67,7 @@ INFO = {
 
 
 # ----- helper functions
-@app.on_event('shutdown')
+@api.on_event('shutdown')
 def delete_all_temp_files():
     print('shutting down...')
     for i, fl in enumerate(list_of_temp_files):
@@ -88,10 +88,10 @@ def limit_temp_files():
 # ----- home
 # @app.get(ENTRYPOINT_DMC_GENERATOR_API_PARSER)
 # @app.get(ENTRYPOINT_DMC_GENERATOR_API_COUNT)
-@app.get(ENTRYPOINT_DMC_GENERATOR_API_IMAGE)
+@api.get(ENTRYPOINT_DMC_GENERATOR_API_IMAGE)
 # @app.get(ENTRYPOINT_DMC_GENERATOR_API_MESSAGE)
-@app.get(ENTRYPOINT_DMC_GENERATOR_API)
-@app.get('/')
+@api.get(ENTRYPOINT_DMC_GENERATOR_API)
+@api.get('/')
 async def home() -> dict:
     return INFO
 
@@ -127,7 +127,7 @@ Content-Type: images/png; charset=UTF-8
 
 
 # ----- API generator: image from single message string
-@app.get(ENTRYPOINT_DMC_GENERATOR_API_IMAGE_FROM_TEXT)
+@api.get(ENTRYPOINT_DMC_GENERATOR_API_IMAGE_FROM_TEXT)
 async def generate_dmc_from_text(
     text: str, 
     rectangular_dmc: bool = False, 
@@ -139,7 +139,7 @@ async def generate_dmc_from_text(
 
 
 # ----- API generator: image from JSON object
-@app.post(ENTRYPOINT_DMC_GENERATOR_API_IMAGE_FROM_JSON)
+@api.post(ENTRYPOINT_DMC_GENERATOR_API_IMAGE_FROM_JSON)
 async def generate_dmc_from_json(data: MessageData) -> FileResponse:
     if not data:
         raise HTTPException(status_code=400, detail="Input data cannot be empty.")
@@ -148,23 +148,23 @@ async def generate_dmc_from_json(data: MessageData) -> FileResponse:
 
 
 # ----- API generator: message
-@app.get(ENTRYPOINT_DMC_GENERATOR_API_MESSAGE_FROM_JSON)
-@app.get(ENTRYPOINT_DMC_GENERATOR_API_MESSAGE)
+@api.get(ENTRYPOINT_DMC_GENERATOR_API_MESSAGE_FROM_JSON)
+@api.get(ENTRYPOINT_DMC_GENERATOR_API_MESSAGE)
 async def home_generate_message_string_from_json_object(data: MessageData) -> str:
     return generate_message_string(data=data)
 
 
 # ----- API: count characters in message
-@app.get(ENTRYPOINT_DMC_GENERATOR_API_COUNT_FROM_TEXT)
-@app.get(ENTRYPOINT_DMC_GENERATOR_API_COUNT)
+@api.get(ENTRYPOINT_DMC_GENERATOR_API_COUNT_FROM_TEXT)
+@api.get(ENTRYPOINT_DMC_GENERATOR_API_COUNT)
 async def count_ascii_characters_in_string(text: str) -> int:
     return count_ascii_characters(text)
 
 
 
 # ----- API: message parser
-@app.get(ENTRYPOINT_DMC_GENERATOR_API_PARSER_FROM_TEXT)
-@app.get(ENTRYPOINT_DMC_GENERATOR_API_PARSER)
+@api.get(ENTRYPOINT_DMC_GENERATOR_API_PARSER_FROM_TEXT)
+@api.get(ENTRYPOINT_DMC_GENERATOR_API_PARSER)
 async def parse_message_to_json(text: str, check_format: bool = True) -> dict:
     try:
         messages = parse_dmc(text, check_format=check_format)

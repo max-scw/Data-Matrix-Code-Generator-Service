@@ -1,41 +1,77 @@
 # Data-Matrix-Code-Generator-Service
-Python-based functions to build, parse message strings according to the ANSI MH-10 standard and generate a Data-Matrix-Code from it wrapped in a mirco-service for a convenient web-frontend.
+Python-based functions to build and parse message strings according to the ANSI MH-10 standard and generate a Data-Matrix-Code from it wrapped in a mirco-service for a convenient web-frontend.
 
-## Description
-Python-based micro-service to generate Data-Matrix-Codes that use ANSI-MH 10 field identifiers (sometimes also referred to as "data identifiers") and message and format envelopes according to ISO / IEC 15434. 
+(Other standards may be implemented later.)
 
-The web-service is build on [streamlit](https://streamlit.io/), which is a python-package for building an interactive website and includes also a web server engine.
+There are three options:
+
+- **vanilla package/code**: The python package [DataMatrixCode](/DataMatrixcode) includes the code to build, parse, generate DMCs (using the [treepeom](https://github.com/adamchainz/treepoem) package)
+- **api**: A [fastAPI](https://fastapi.tiangolo.com/)-based web-service that wraps the DataMatrixCode package to a minimal web-api
+- **app** (with convenient GUI front-end): This web-service is build on [streamlit](https://streamlit.io/), which is a python-package for building an interactive website and includes also a web server engine.
 
 ## Installation and Usage
-The project is meant to be compiled to a Docker container. See Dockerfile for installation instructions.
+
+### Installation
+The project is meant to be compiled to its Docker containers. See Dockerfile for installation instructions.
+
+#### local
+Install Python 3.9 (or later) and its package management PIP. Create a virtual environment; then install the requirements to it
+```shell
+pip install -r api.requirements.txt
+pip install -r app.requirements.txt
+
+```
+Now run [fastAPI](https://fastapi.tiangolo.com/) and / or [streamlit](https://streamlit.io/):
+```shell
+uvicorn api-main:api
+streamlit run app-main.py
+```
+You can access the services now in your webbrowser on the default ports: http://localhost:8000 and http://localhost:8501 for the api and the app respectively
+
+#### Docker
+Build docker container based on Python3.9
+```shell
+docker build --tag=dmc-generator/api -f api-Dockerfile .
+docker build --tag=dmc-generator/app -f app-Dockerfile .
+```
+Run containers
+```shell
+docker run -d -p 5001:8000 --name=fastapi-dmc-generator dmc-generator/api
+docker run -d -p 5002:8501 --name=streamlit-dmc-generator dmc-generator/app
+```
+Where you can now access the services on: http://localhost:5001 and http://localhost:5002.
+
 
 ### Usage
+
+#### [streamlit](https://streamlit.io/)-based web-app
+##### Interface
 The initial page shows only the required fields, if any are specified. If not, the initial page consists of a single row (data identifier as drop down menu + input field).
 
-![initial view](docs/DMC_0.jpg)
+![initial view](docs/app/DMC_Home.jpg)
 
 Note that you can change the options dynamically when expanding the container "options". The options are stored for the session. The default options can be specified for in the configuration file when starting the streamlit server (for examples see below.)
 
-![expanded options](docs/DMC_options.jpg)
+![expanded options](docs/app/DMC_options.jpg)
 
 When selecting a new data identifier, the corresponding explanation is displayed above the row:
 
-![explain DI](docs/DMC_explanation.jpg)
+![explain DI](docs/app/DMC_explanation.jpg)
 
 and a warning is issued when the input does not comply with the expected format.
 
-![warning](docs/DMC_warning_comply.jpg)
+![warning](docs/app/DMC_warning_comply.jpg)
 
 For generating a code simply click the button "generate". A correct message string is created automatically and the number of ASCII characters of this string is displayed next to the image of the code. 
 
-![generated DMC](docs/DMC_generate.jpg)
+![generated DMC](docs/app/DMC_generate.jpg)
 
 Note that no DMC is generated if one leaves one of the required fields empty.
 
-![error missing required field](docs/DMC_error_missing_field.jpg)
+![error missing required field](docs/app/DMC_error_missing_field.jpg)
 
 
-### Configuration
+##### Configuration
 [streamlit](https://streamlit.io/) can be configured via a TOML file [config.toml](config.toml), e.g. the `primarycolor` of the overall theme (see config file as example or the streamlit-docs).
 We extended this file to add a section `[DMC]`, where one can specify field identifiers that should be required in the code. This is an array of strings. One can connect two identifiers as OR with an | symbol. See example.
 
@@ -55,27 +91,13 @@ ExplainDataIdentifiers = true
 
 
 
-### Installation
-#### manual
-Install Python 3.9 (or later) and its package management PIP. Create a virtual environment; then install the requirements to it
-```shell
-pip install -r requirements.txt
-```
-Now run [streamlit](https://streamlit.io/)
-```shell
-streamlit run App-Data-Matrix-Generator.py
-```
 
-#### Docker
-Build docker container based on Python3.9
-```shell
-docker build --tag=dmc-generator/streamlit .
-```
-Run container
-```shell
-docker run -d -p 8502:8501 --name=streamlit-dmc-generator dmc-generator/streamlit
-```
 
+
+#### [fastapi](https://fastapi.tiangolo.com/)-based web-api
+fastapi conveniently builds an automatic documentation at the `/docs` endpoint. Please check these examples there.
+
+![initial view](docs/api/DMC_fastapi_docs.jpg)
 
 
 ## Authors and acknowledgment
@@ -84,6 +106,7 @@ max-scw
 
 ## License
 This project is licensed under the [AGLPv3](https://www.gnu.org/licenses/agpl-3.0.en.html) - see the [LICENSE](LICENSE) file for details.
+
 The python library [treepeom](https://github.com/adamchainz/treepoem), which is used to generate DMCs, uses [ghostscript](https://ghostscript.com/releases/gsdnld.html). The open-source [license of ghostscript](https://ghostscript.com/licensing/index.html) uses a [AGLPv3](https://www.gnu.org/licenses/agpl-3.0.en.html) license (strong copy-left license, i.e. all code in a project that uses ghostscript must be made available as open-source with the same license) but also offers a commercial license. Therefore the project is also bined to AGLPv3 license. 
 If there is a way to replace ghostscript, I would be happy to publish the code under a more liberal scheme.
 
