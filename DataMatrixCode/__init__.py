@@ -9,6 +9,8 @@ from .DMCGenerator import DMCGenerator, generate_dmc_from_string
 from .DMC import (
     DataMatrixCode, 
     generate_dmc, 
+    generate_message_string,
+    count_compressed_ascii_characters as count_ascii_characters,
     parse_dmc,
     validate_format
 )

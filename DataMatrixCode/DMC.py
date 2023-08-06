@@ -1,6 +1,12 @@
 from .utils import MessageData, message_data_to_list, EnvelopeData
 
-from .DMCText import DMCMessageParser, FormatParser, DMCMessageBuilder, put_into_message_envelope, count_compressed_ascii_characters
+from .DMCText import (
+    DMCMessageParser, 
+    FormatParser, 
+    DMCMessageBuilder, 
+    put_into_message_envelope, 
+    count_compressed_ascii_characters
+)
 from .DMCGenerator import generate_dmc_from_string
 
 from typing import Union, Dict, List
@@ -15,7 +21,8 @@ class DataMatrixCode:
                  data: Union[List[dict], dict], 
                  use_format_envelope: bool, 
                  use_message_envelope: bool,
-                 **kwargs):
+                 **kwargs
+                 ) -> None:
         self.use_format_envelope = use_format_envelope
         self.use_message_envelope = use_message_envelope
         self._kwargs = kwargs
@@ -80,7 +87,7 @@ def validate_format(envelopes: dict) -> dict:
             messages = flds
         else:
             raise ValueError
-        segments, segment_valid = FormatParser(fmt, messages, strict=False, verbose=True).parse(True)
+        segments, segment_valid = FormatParser(fmt, messages, strict=False, verbose=False).parse(True)
         # keep only valid envelopes
         valid_envelopes[fmt] = {el["data_identifier"]: el["content"] for el in segments if el["code_valid"]}
 
@@ -100,6 +107,17 @@ def generate_dmc(data: MessageData, file_path: Union[str, Path] = None) -> Union
 
     fields = message_data_to_list(data)
     return DataMatrixCode(data=fields, **args).generate_image()
+
+
+def generate_message_string(data: MessageData) -> str:
+    """wrapper"""
+    args = {
+        "use_format_envelope": data.use_format_envelope,
+        "use_message_envelope": data.use_message_envelope
+    }
+
+    fields = message_data_to_list(data)
+    return DataMatrixCode(data=fields, **args).get_message()
 
 
 def parse_dmc(text: str, check_format: bool = True) -> Dict[str, List[str]]:

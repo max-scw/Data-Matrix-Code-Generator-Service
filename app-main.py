@@ -5,7 +5,14 @@ from pip._vendor import tomli as tomllib  # standard in Python 3.11
 from pathlib import Path
 from itertools import chain
 
-from DataMatrixCode import FORMAT_ANSI_MH_10, message_formats, MessageData, DataMatrixCode, FormatParser, validate_format
+from DataMatrixCode import (
+    FORMAT_ANSI_MH_10, 
+    message_formats, 
+    MessageData, 
+    DataMatrixCode, 
+    FormatParser, 
+    validate_format
+)
 
 from typing import Dict, Union, List, Any
 
