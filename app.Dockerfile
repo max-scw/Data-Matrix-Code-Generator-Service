@@ -30,7 +30,7 @@ WORKDIR /app
 
 # Copy the app to the container
 COPY DataMatrixCode/ ./DataMatrixCode/
-COPY app-main.py README.md LICENSE ./
+COPY app-main.py utils.py README.md LICENSE ./
 RUN mkdir .streamlit
 COPY .streamlit/config.toml .streamlit/config.toml
 

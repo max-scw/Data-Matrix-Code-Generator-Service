@@ -14,6 +14,8 @@ from DataMatrixCode import (
     validate_envelope_format
 )
 
+from utils import get_environment_variables
+
 from typing import Dict, Union, List, Any
 
 
@@ -46,6 +48,9 @@ class DMCConfig:
         else:
             config = self._read_config(path_to_file)
             self.config = config["DMC"] if "DMC" in config else []
+        
+        # check environment variables and merge dictionaries
+        self.config |= get_environment_variables(self._default.keys(), "DMC")
 
     @staticmethod
     def _read_config(path_to_file: Union[str, Path]) -> Union[Dict[str, Any], dict]:
