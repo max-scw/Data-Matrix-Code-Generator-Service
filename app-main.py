@@ -1,7 +1,7 @@
 import streamlit as st
 import uuid
 import binascii
-
+from pathlib import Path
 
 from DataMatrixCode import (
     FORMAT_ANSI_MH_10, 
@@ -12,7 +12,7 @@ from DataMatrixCode import (
     validate_envelope_format
 )
 
-from utils import get_environment_variables, DMCConfig
+from utils import DMCConfig
 
 from typing import Dict, Union, List, Any
 
@@ -24,15 +24,18 @@ FORMAT_MAPPING = message_formats(DI_FORMAT).get_di_mapping()
 
 @st.cache_data
 def get_config() -> DMCConfig:
+    # initialize / default path
+    path_to_config = None
+    # file name and potential paths
     file_name = "config.toml"
     potential_paths = ["", ".streamlit"]
+    # check potential paths
     for p in potential_paths:
-        path_to_config = Path(p) / file_name
-        print(f"DEBUG: path_to_config={path_to_config.as_posix()}.exists(): {path_to_config.exists()}")
-        if path_to_config.exists():
+        path_to_config_ = Path(p) / file_name
+        print(f"DEBUG: path_to_config={path_to_config_.as_posix()}.exists(): {path_to_config_.exists()}")
+        if path_to_config_.exists():
+            path_to_config = path_to_config_
             break
-        else:
-            path_to_config = None
 
     # read config file
     return DMCConfig(path_to_config)
@@ -208,7 +211,7 @@ def initialize_options(config: DMCConfig):
         st.session_state.use_rectangular = config.get_default_values("RectangularDMC")
 
     if "n_quiet_zone_moduls" not in st.session_state:
-        st.session_state.n_quiet_zone_moduls = config.get_default_values("NumberOfQuietZoneModuls")
+        st.session_state.n_quiet_zone_moduls = config.get_default_values("NumberQuietZoneModules")
 
     if "options_expanded" not in st.session_state:
         st.session_state.options_expanded = False
