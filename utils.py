@@ -42,7 +42,9 @@ class DMCConfig:
         "RectangularDMC": False,
         "NumberQuietZoneModules": 2,
         "ExplainDataIdentifiers": True,
-        "requiredDataIdentifiers": None
+        "requiredDataIdentifiers": None,
+        # "PageTitle": "DMC Generator",
+        "Title": "Data-Matrix-Code Service"
         }
 
     def __init__(self, path_to_file: Union[str, Path] = None):
@@ -59,6 +61,9 @@ class DMCConfig:
         #     if type(self._default[ky])
         self.config = config | config_env
 
+    def __getitem__(self, key: str):
+        return self.get_default_values(key)
+    
     @staticmethod
     def _read_config(path_to_file: Union[str, Path]) -> Union[Dict[str, Any], dict]:
         path_to_file = Path(path_to_file).with_suffix(".toml")

@@ -202,22 +202,22 @@ class Row:
 def initialize_options(config: DMCConfig):
     # default values
     if "use_message_envelope" not in st.session_state:
-        st.session_state.use_message_envelope = config.get_default_values("UseMessageEnvelope")
+        st.session_state.use_message_envelope = config["UseMessageEnvelope"]
 
     if "use_format_envelope" not in st.session_state:
-        st.session_state.use_format_envelope = config.get_default_values("UseFormatEnvelope")
+        st.session_state.use_format_envelope = config["UseFormatEnvelope"]
 
     if "use_rectangular" not in st.session_state:
-        st.session_state.use_rectangular = config.get_default_values("RectangularDMC")
+        st.session_state.use_rectangular = config["RectangularDMC"]
 
     if "n_quiet_zone_moduls" not in st.session_state:
-        st.session_state.n_quiet_zone_moduls = config.get_default_values("NumberQuietZoneModules")
+        st.session_state.n_quiet_zone_moduls = config["NumberQuietZoneModules"]
 
     if "options_expanded" not in st.session_state:
         st.session_state.options_expanded = False
 
     if "explain_data_identifiers" not in st.session_state:
-        st.session_state.explain_data_identifiers = config.get_default_values("ExplainDataIdentifiers")
+        st.session_state.explain_data_identifiers = config["ExplainDataIdentifiers"]
 
 
 def draw_options():
@@ -287,7 +287,7 @@ def draw_results(img, message_string: str, n_ascii_characters: int):
 def main():
     # configure page => set favicon and page title
     st.set_page_config(page_title="DMC Generator", page_icon="💡")  #  chr(int(" U+1F4A1"[2:], 16)) # https://emojipedia.org/  chr(int("U+1F6A8"[2:], 16))
-    st.title("Data-Matrix-Code Service")
+
     # hide "made with Streamlit" text in footer
     hide_streamlit_style = """
                 <style>
@@ -298,6 +298,8 @@ def main():
     st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
     config = get_config()
+    st.title(config["Title"])
+
     initialize_options(config)
     flag_valid = draw_input_rows(config)
 
@@ -362,5 +364,6 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
     # streamlit run app-main.py

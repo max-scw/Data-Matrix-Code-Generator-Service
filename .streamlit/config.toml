@@ -12,3 +12,4 @@ UseFormatEnvelope = true
 RectangularDMC = false
 NumberOfQuietZoneModuls = 2
 ExplainDataIdentifiers = true
+Title = "Data-Matrix-Code Service"
