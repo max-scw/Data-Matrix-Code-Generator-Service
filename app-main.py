@@ -23,7 +23,7 @@ FORMAT_MAPPING = message_formats(DI_FORMAT).get_di_mapping()
     
 
 @st.cache_data
-def get_config() -> DMCConfig:
+def get_config(prefix: str) -> DMCConfig:
     # initialize / default path
     path_to_config = None
     # file name and potential paths
@@ -38,7 +38,7 @@ def get_config() -> DMCConfig:
             break
 
     # read config file
-    return DMCConfig(path_to_config)
+    return DMCConfig(path_to_config, prefix)
 
 
 def rstrip_non_ascii_characters(text: str) -> str:
@@ -284,7 +284,7 @@ def draw_results(img, message_string: str, n_ascii_characters: int):
         st.metric("#ASCII characters", n_ascii_characters)
 
 
-def main():
+def main(prefix: str = "DMC"):
     # configure page => set favicon and page title
     st.set_page_config(page_title="DMC Generator", page_icon="💡")  #  chr(int(" U+1F4A1"[2:], 16)) # https://emojipedia.org/  chr(int("U+1F6A8"[2:], 16))
 
@@ -297,7 +297,7 @@ def main():
                 """
     st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-    config = get_config()
+    config = get_config(prefix)
     st.title(config["Title"])
 
     initialize_options(config)
@@ -365,5 +365,5 @@ def main():
 
 if __name__ == "__main__":
 
-    main()
+    main("DMC")
     # streamlit run app-main.py

@@ -47,15 +47,15 @@ class DMCConfig:
         "Title": "Data-Matrix-Code Service"
         }
 
-    def __init__(self, path_to_file: Union[str, Path] = None):
+    def __init__(self, path_to_file: Union[str, Path] = None, prefix: str = "DMC"):
         if path_to_file is None:
             config = dict()
         else:
             config = self._read_config(path_to_file)
-            config = config["DMC"] if "DMC" in config else dict()
+            config = config[prefix] if prefix in config else dict()
         
         # check environment variables and merge dictionaries
-        config_env = get_environment_variables(list(self._default.keys()), "DMC")
+        config_env = get_environment_variables(list(self._default.keys()), prefix)
         # cast if necessary
         config_env = cast_dict_to_type(self._default, config_env)
         #     if type(self._default[ky])
