@@ -31,19 +31,19 @@ You can access the services now in your webbrowser on the default ports: http://
 #### Docker
 Build docker container based on Python3.9
 ```shell
-docker build --tag=dmc-generator/api -f api.Dockerfile .
-docker build --tag=dmc-generator/app -f app.Dockerfile .
+docker build --tag=dmc-generator-api -f api.Dockerfile .
+docker build --tag=dmc-generator-app -f app.Dockerfile .
 ```
 Run containers
 ```shell
-docker run -d -p 5001:8000 --name=fastapi-dmc-generator dmc-generator/api
-docker run -d -p 5002:8501 --name=streamlit-dmc-generator dmc-generator/app
+docker run -d -p 5001:8000 --name=fastapi-dmc-generator dmc-generator-api
+docker run -d -p 5002:8501 --name=streamlit-dmc-generator dmc-generator-app
 ```
 Where you can now access the services on: http://localhost:5001 and http://localhost:5002.
 
 One can set all options also as environment variables with the prefix `DMC_` ,e.g.:
 ```shell
-docker run -d -p 5002:8501 --name=streamlit-dmc-generator -e DMC_TITLE="My Data-Matrix-Generator" -e DMC_NUMBER_OF_QUIET_ZONE_MODULES=10 dmc-generator/app
+docker run -d -p 5002:8501 --name=streamlit-dmc-generator -e DMC_TITLE="My Data-Matrix-Generator" -e DMC_NUMBER_OF_QUIET_ZONE_MODULES=10 dmc-generator-app
 ```
 (Options are the same as in the *config.toml*-file but with the prefix `DMC_` and an underscore `_` before capital letters as all environment variables should be capital letters only, e.g. `NumberOfQuietZoneModules` in *config.toml* => `DMC_NUMBER_QUIET_ZONE_MODULES` as enviroment variable.)
 
