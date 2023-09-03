@@ -10,6 +10,6 @@ requiredDataIdentifiers = ["P", "S|T", "V"]
 UseMessageEnvelope = true
 UseFormatEnvelope = true
 RectangularDMC = false
-NumberOfQuietZoneModuls = 2
+NumberOfQuietZoneModules = 2
 ExplainDataIdentifiers = true
 Title = "Data-Matrix-Code Service"
