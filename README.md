@@ -115,6 +115,9 @@ This project is licensed under the [AGLPv3](https://www.gnu.org/licenses/agpl-3.
 The python library [treepeom](https://github.com/adamchainz/treepoem), which is used to generate DMCs, uses [ghostscript](https://ghostscript.com/releases/gsdnld.html). The open-source [license of ghostscript](https://ghostscript.com/licensing/index.html) uses a [AGLPv3](https://www.gnu.org/licenses/agpl-3.0.en.html) license (strong copy-left license, i.e. all code in a project that uses ghostscript must be made available as open-source with the same license) but also offers a commercial license. Therefore the project is also bined to AGLPv3 license. 
 If there is a way to replace ghostscript, I would be happy to publish the code under a more liberal scheme.
 
+## Release & Version
+- **0.1** initial release
+
 ## Status
 maintenance + minor feature development
 
