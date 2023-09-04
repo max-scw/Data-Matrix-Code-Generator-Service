@@ -40,12 +40,16 @@ docker run -d -p 5001:8000 --name=fastapi-dmc-generator dmc-generator-api
 docker run -d -p 5002:8501 --name=streamlit-dmc-generator dmc-generator-app
 ```
 Where you can now access the services on: http://localhost:5001 and http://localhost:5002.
+### Customize
 
 One can set all options also as environment variables with the prefix `DMC_` ,e.g.:
 ```shell
 docker run -d -p 5002:8501 --name=streamlit-dmc-generator -e DMC_TITLE="My Data-Matrix-Generator" -e DMC_NUMBER_OF_QUIET_ZONE_MODULES=10 dmc-generator-app
 ```
 (Options are the same as in the *config.toml*-file but with the prefix `DMC_` and an underscore `_` before capital letters as all environment variables should be capital letters only, e.g. `NumberOfQuietZoneModules` in *config.toml* => `DMC_NUMBER_QUIET_ZONE_MODULES` as enviroment variable.)
+
+You may also want to adjust the text on the top of the page with the keywords `Title`, `Header`, `Subheader`, and `Text` (in descending font) in the *config.toml*-file or `DMC_TITLE`, `DMC_HEADER`, `DMC_SUBHEADER`, and `DMC_TEXT` respectively as environment vairalbes.
+
 
 ### Usage
 

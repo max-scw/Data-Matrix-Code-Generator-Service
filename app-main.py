@@ -297,8 +297,16 @@ def main(prefix: str = "DMC"):
                 """
     st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
+    # Text
     config = get_config(prefix)
     st.title(config["Title"])
+
+    if config["Header"]:
+        st.header(config["Header"])
+    if config["Subheader"]:
+        st.subheader(config["Subheader"])
+    if config["Text"]:
+        st.write(config["Text"])
 
     initialize_options(config)
     flag_valid = draw_input_rows(config)
@@ -364,6 +372,9 @@ def main(prefix: str = "DMC"):
 
 
 if __name__ == "__main__":
+    import os
+    os.environ.setdefault("DMC_HEADER", "This is a Header")
+    os.environ.setdefault("DMC_SUBHEADER", "This is a Subheader")
 
     main("DMC")
     # streamlit run app-main.py

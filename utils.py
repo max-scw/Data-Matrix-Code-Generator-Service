@@ -43,8 +43,10 @@ class DMCConfig:
         "NumberQuietZoneModules": 2,
         "ExplainDataIdentifiers": True,
         "requiredDataIdentifiers": None,
-        # "PageTitle": "DMC Generator",
-        "Title": "Data-Matrix-Code Service"
+        "Title": "Data-Matrix-Code Service",
+        "Header": None,
+        "Subheader": None,
+        "Text": None
         }
 
     def __init__(self, path_to_file: Union[str, Path] = None, prefix: str = "DMC"):
