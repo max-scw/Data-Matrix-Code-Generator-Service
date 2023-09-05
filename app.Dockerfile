@@ -19,14 +19,27 @@ RUN apt update && \
 				   build-essential \
 				   ghostscript && \
     apt clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* \
+
+# new default user
+USER appuser
+# Set the working directory
+WORKDIR /home/appuser
+
+# configure python & pip
+RUN pip3 install --no-cache-dir --upgrade \
+    pip \
+    virtualenv
+
+ENV VIRTUAL_ENV=/home/appuser/venv
+RUN virtualenv ${VIRTUAL_ENV}
+RUN . ${VIRTUAL_ENV}/bin/activate
+
 
 # Install requirements
 COPY app-requirements.txt requirements.txt
 RUN pip install -r requirements.txt --no-cache-dir
 
-# Set the working directory
-WORKDIR /app
 
 # Copy the app to the container
 COPY DataMatrixCode/ ./DataMatrixCode/
