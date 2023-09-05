@@ -58,10 +58,11 @@ class DataMatrixCode:
         for fmt, flds in envelopes.items():
             builder = DMCMessageBuilder(message_fields=flds, message_format=fmt)
             message_string += builder.get_message_string(use_message_envelope=self.use_message_envelope,
-                                                         use_format_envelope=self.use_format_envelope)
+                                                         use_format_envelope=False)
+        if self.use_format_envelope:
+            message_string = put_into_message_envelope(message_string)
 
-        content_string = put_into_message_envelope(message_string)
-        return content_string
+        return message_string
     
     @property
     def n_ascii_characters(self) -> int:
@@ -140,5 +141,4 @@ if __name__ == "__main__":
     # Example parse_dmc(), a wrapper function to split a message string (of a DMC) into its fields
     text_dmc = "[)>\x1eS123456\x1dV123H48999\x1d18D202312011155\x1d15D24121990\x04"
     parse_dmc(text_dmc)
-
 

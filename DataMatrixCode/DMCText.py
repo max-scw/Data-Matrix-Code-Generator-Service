@@ -191,7 +191,7 @@ def rais_error_or_warning(message: str, strict: bool, verbose: bool) -> bool:
     return False
 
 
-def put_into_message_envelope(message) -> str:
+def put_into_message_envelope(message: str) -> str:
     return message_formats().get_message_envelope("head") + message + message_formats().get_message_envelope("tail")
 
 
@@ -268,6 +268,7 @@ def count_compressed_ascii_characters(msg: str) -> int:
             n += 1
             last_char_was_reduced = False
     return n
+
 
 if __name__ == "__main__":
     dmc_text = "[)>\x1eS123456\x1dV123H48999\x1d18D202312011155\x1d15D24121990\x04"
