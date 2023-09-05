@@ -1,5 +1,6 @@
 import os
 import re
+import ast
 
 from pip._vendor import tomli as tomllib  # standard in Python 3.11
 from pathlib import Path
@@ -48,6 +49,10 @@ class DMCConfig:
         }
 
     def __init__(self, path_to_file: Union[str, Path] = None, prefix: str = "DMC"):
+        # store input
+        self.__path_to_file = path_to_file
+        self.__prefix = prefix
+
         if path_to_file is None:
             config = dict()
         else:
@@ -59,10 +64,19 @@ class DMCConfig:
         # cast if necessary
         config_env = cast_dict_to_type(self._default, config_env)
         #     if type(self._default[ky])
-        self.config = config | config_env
+        self.config = config_env | config
 
     def __getitem__(self, key: str):
         return self.get_default_values(key)
+
+    def __repr__(self):
+        init = []
+        if self.__path_to_file:
+            init.append(f"path_to_file={self.__path_to_file}")
+        init.append(f"prefix={self.__prefix}")
+
+        call = f"DMCConfig({', '.join(init)})"
+        return f"{call}: {self.config}"
     
     @staticmethod
     def _read_config(path_to_file: Union[str, Path]) -> Union[Dict[str, Any], dict]:
@@ -82,9 +96,18 @@ class DMCConfig:
         key = "requiredDataIdentifiers"
         dis = []
         if self.config and key in self.config:
+            # check for list
+
             dis = self.config[key] if key in self.config else []
-            if dis:
+
+            if isinstance(dis, str) and re.match("\[([A-Z0-9]+,?)+\]$", dis):
+                dis = ast.literal_eval(dis)
+            # TODO: check what happens with numbers
+            if isinstance(dis, str):
+                dis = dis.split("|")
+            elif isinstance(dis, list):
                 dis = [di.split("|") for di in dis]
+
             if flatten:
                 dis = list(chain.from_iterable(dis))
         return dis
@@ -128,11 +151,20 @@ def cast_dict_to_type(dict1: dict, dict2: dict) -> dict:
 
 
 if __name__ == "__main__":
+    config1 = DMCConfig(Path(".streamlit/config.toml"))
+    print(config1)
+    config1.required_dis()
+
     os.environ.setdefault("DMC_NUMBER_QUIET_ZONE_MODULES", "10")
-    os.environ.setdefault("DMC_REQUIRED_DATA_IDENTIFIERS", "T")
+    os.environ.setdefault("DMC_REQUIRED_DATA_IDENTIFIERS", "T|V")
     os.environ.setdefault("DMC_USE_FORMAT_ENVELOPE", "true")
 
     keys = ["UseMessageEnvelope", "UseFormatEnvelope", "RectangularDMC", "NumberQuietZoneModules", "ExplainDataIdentifiers"]
     out = get_environment_variables(keys, "DMC")
+    config2 = DMCConfig()
+    print(config2)
+    config2.required_dis()
 
-    DMCConfig(Path(".streamlit/config.toml"))
+    config3 = DMCConfig(Path(".streamlit/config.toml"))
+    print(config3)
+    config3.required_dis()
