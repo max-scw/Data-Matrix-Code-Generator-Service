@@ -100,9 +100,16 @@ class DMCConfig:
 
             dis = self.config[key] if key in self.config else []
 
-            if isinstance(dis, str) and re.match("\[([A-Z0-9]+,?)+\]$", dis):
-                dis = ast.literal_eval(dis)
-            # TODO: check what happens with numbers
+            # pattern data identifier
+            pat_di = "([0-9]{0,2}[A-Z])"
+            # add optional data identifiers
+            pat_opt = rf"({pat_di}(\|{pat_di})*)"
+            # make list
+            pat_list = rf"\[{pat_opt}(,\s?{pat_opt})*\]$"
+
+            if isinstance(dis, str) and re.match(pat_list, dis):
+                dis = re.split(r",\s?", dis[1:-1])
+
             if isinstance(dis, str):
                 dis = dis.split("|")
             elif isinstance(dis, list):
@@ -168,3 +175,8 @@ if __name__ == "__main__":
     config3 = DMCConfig(Path(".streamlit/config.toml"))
     print(config3)
     config3.required_dis()
+
+    os.environ.setdefault("TEST_REQUIRED_DATA_IDENTIFIERS", "[S, 12T|V,50G]")
+    config4 = DMCConfig(prefix="TEST")
+    print(config4)
+    config4.required_dis()
