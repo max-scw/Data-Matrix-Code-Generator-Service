@@ -57,9 +57,9 @@ class DataMatrixCode:
         message_string = ""
         for fmt, flds in envelopes.items():
             builder = DMCMessageBuilder(message_fields=flds, message_format=fmt)
-            message_string += builder.get_message_string(use_message_envelope=self.use_message_envelope,
-                                                         use_format_envelope=False)
-        if self.use_format_envelope:
+            message_string += builder.get_message_string(use_message_envelope=False,
+                                                         use_format_envelope=self.use_format_envelope)
+        if self.use_message_envelope:
             message_string = put_into_message_envelope(message_string)
 
         return message_string

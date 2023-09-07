@@ -19,7 +19,7 @@ RUN apt update && \
 				   build-essential \
 				   ghostscript && \
     apt clean && \
-    rm -rf /var/lib/apt/lists/* \
+    rm -rf /var/lib/apt/lists/* 
 
 # new default user
 USER appuser
