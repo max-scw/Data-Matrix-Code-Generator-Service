@@ -1,4 +1,5 @@
-FROM python:3.9.16-slim-bullseye
+FROM python:3.9.16-slim-bullseye as compiler
+ENV PYTHONUNBUFFERED 1
 
 # Metadata
 LABEL author=SCW-MAX
@@ -22,6 +23,7 @@ RUN apt update && \
     rm -rf /var/lib/apt/lists/* 
 
 # new default user
+RUN useradd -ms /bin/bash appuser
 USER appuser
 # Set the working directory
 WORKDIR /home/appuser
@@ -31,24 +33,29 @@ RUN pip3 install --no-cache-dir --upgrade \
     pip \
     virtualenv
 
-ENV VIRTUAL_ENV=/home/appuser/venv
-RUN virtualenv ${VIRTUAL_ENV}
-RUN . ${VIRTUAL_ENV}/bin/activate
-
+# create virtual environment
+RUN python3 -m venv venv
+# put venv on the first position of PATH, because normal "activation" only affects the single RUN command in a Dockerfile
+ENV PATH="/home/appuser/venv/bin:$PATH"
+RUN pip install --upgrade pip
 
 # Install requirements
 COPY app-requirements.txt requirements.txt
 RUN pip install -r requirements.txt --no-cache-dir
 
+RUN mkdir source/
+WORKDIR /home/appuser/source
 
 # Copy the app to the container
 COPY DataMatrixCode/ ./DataMatrixCode/
 COPY app-main.py utils.py README.md LICENSE ./
-RUN mkdir .streamlit
+# RUN mkdir .streamlit
 COPY .streamlit/config.toml .streamlit/config.toml
 
-# Expose the port
+
+# Expose the ports
 EXPOSE 8501
 
 # Start the app
 CMD ["streamlit", "run", "app-main.py"]
+#ENTRYPOINT ["tail", "-f", "/dev/null"]
