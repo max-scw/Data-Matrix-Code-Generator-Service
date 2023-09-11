@@ -372,9 +372,9 @@ def main(prefix: str = "DMC"):
 
 
 if __name__ == "__main__":
-    import os
-    os.environ.setdefault("DMC_HEADER", "This is a Header")
-    os.environ.setdefault("DMC_SUBHEADER", "This is a Subheader")
+    # import os
+    # os.environ.setdefault("DMC_HEADER", "This is a Header")
+    # os.environ.setdefault("DMC_SUBHEADER", "This is a Subheader")
 
     main("DMC")
     # streamlit run app-main.py
