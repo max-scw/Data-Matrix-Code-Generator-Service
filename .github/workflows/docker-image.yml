@@ -15,17 +15,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: name/app
-          # tags: |
-          #   type=ref,event=branch
-          #   type=ref,event=tag
-          #   type=schedule,pattern={{date 'YYYYMMDD'}}
-          #   app
-          #   streamlit
+      # - name: Docker meta
+      #   id: meta
+      #   uses: docker/metadata-action@v4
+      #   with:
+      #     images: name/app
+      #     tags: |
+      #       type=ref,event=branch
+      #       type=ref,event=tag
+      #       type=schedule,pattern={{date 'YYYYMMDD'}}
+      #       app
+      #       streamlit
             
       - name: Log in to the Container registry
         uses: docker/login-action@v2
@@ -39,6 +39,7 @@ jobs:
           context: .
           file: app.Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: maxscw/app
+          # tags: ${{ steps.meta.outputs.tags }}
+          # labels: ${{ steps.meta.outputs.labels }}
           
