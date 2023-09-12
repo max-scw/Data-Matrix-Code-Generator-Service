@@ -24,6 +24,7 @@ jobs:
             type=ref,event=branch
             type=ref,event=tag
             type=schedule,pattern={{date 'YYYYMMDD'}}
+            latest
             app
             streamlit
             data-matrix-code
