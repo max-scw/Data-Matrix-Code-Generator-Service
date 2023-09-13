@@ -49,40 +49,7 @@ WORKDIR /home/appuser/source
 # Copy the app to the container
 COPY DataMatrixCode/ ./DataMatrixCode/
 COPY app-main.py utils.py README.md LICENSE ./
-# RUN mkdir .streamlit
-COPY .streamlit/config.toml .streamlit/config.toml
-
-
-
-
-# FROM python:3.9.16-slim-bullseye as runner
-# # # new default user
-# # RUN useradd -ms /bin/bash appuser
-# # USER appuser
-# # Set the working directory
-# WORKDIR /home/appuser
-
-# # copy virtual environment
-# COPY --from=compiler /home/appuser/venv/ ./venv/
-# # put venv first to mimic activation
-# ENV PATH="/home/appuser/venv/bin:$PATH"
-
-# # copy ghostscript 
-# COPY --from=compiler /usr/bin/gs /usr/bin/gs
-# COPY --from=compiler /usr/share/ghostscript/ /usr/share/ghostscript/
-# COPY --from=compiler /usr/share/color/icc/ghostscript/ /usr/share/color/icc/ghostscript/
-# COPY --from=compiler /var/lib/ghostscript/ /var/lib/ghostscript/
-# COPY --from=compiler /etc/ghostscript /etc/ghostscript
-# COPY --from=compiler /usr/lib/x86_64-linux-gnu/ /usr/lib/x86_64-linux-gnu/
-# COPY --from=compiler /lib/x86_64-linux-gnu/ /lib/x86_64-linux-gnu/
-
-
-# # copy source code
-# COPY --from=compiler /home/appuser/source .
-
-
-# # gs -dSAFER -dNOPAUSE -dBATCH -sDEVICE=bbox -c <</PageOffset [3000 3000]>> setpagedevice -f -
-
+# COPY .streamlit/config.toml .streamlit/config.toml
 
 # Expose the ports
 EXPOSE 8501
