@@ -120,7 +120,7 @@ The python library [treepeom](https://github.com/adamchainz/treepoem), which is 
 If there is a way to replace ghostscript, I would be happy to publish the code under a more liberal scheme.
 
 ## Release & Version
-- **0.1** initial release
+- **0.1.1** bugfix initial release
 
 ## Status
 maintenance + minor feature development
