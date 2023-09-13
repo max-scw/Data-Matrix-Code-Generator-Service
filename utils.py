@@ -1,11 +1,9 @@
 import os
 import re
-import ast
 
 from pip._vendor import tomli as tomllib  # standard in Python 3.11
 from pathlib import Path
 from itertools import chain
-from pydoc import locate
 
 from typing import List, Dict, Any, Union
 
@@ -21,10 +19,23 @@ def get_environment_variables(camel_case_keys: List[str], prefix: str) -> Dict[s
         # build name of environment variable
         name = (f"{prefix}_" + "_".join(camel_case_split(ky))).upper()
         val = os.environ.get(name)
-        print(f"DEBUG get_environment_variables(): {name}={val}")
         if val is not None:
-            environment_config[ky] = val
+            environment_config[ky] = cast(val)
     return environment_config
+
+
+def cast(var: str) -> Union[None, int, float, str, bool]:
+    """casting strings to primitive datatypes"""
+    if re.match(r"[0-9.,]+$", var):
+        if re.match(r"\d+$", var):  # integer
+            var = int(var)
+        elif re.match(r"((\d+\.(\d+)?)|(\.\d+))$", var):  # float
+            var = float(var)
+        elif re.match(r"((\d+,(\d+)?)|(,\d+))$", var):  # float
+            var = float(var.replace(",", "."))
+    elif re.match(r"(True)|(False)$", var, re.IGNORECASE):
+        var = True if var[0].lower() == "t" else False
+    return var
 
 
 class DMCConfig:
@@ -63,9 +74,7 @@ class DMCConfig:
         
         # check environment variables and merge dictionaries
         config_env = get_environment_variables(list(self._default.keys()), prefix)
-        # cast if necessary
-        config_env = cast_dict_to_type(self._default, config_env)
-        #     if type(self._default[ky])
+
         self.config = config_env | config
 
     def __getitem__(self, key: str):
@@ -149,27 +158,17 @@ class DMCConfig:
             raise ValueError(f"Unknown key '{key}' for configuration and default parameters.")
 
 
-def cast_dict_to_type(dict1: dict, dict2: dict) -> dict:
-    for ky, val in dict2.items():
-        if type(dict1[ky]).__name__ not in ["str", "NoneType"]:
-            # initialize type
-            var_type = locate(type(dict1[ky]).__name__)
-            # cast to type
-            dict2[ky] = var_type(val)
-    return dict2
-
-
 if __name__ == "__main__":
-    config1 = DMCConfig(Path(".streamlit/config.toml"))
-    print(config1)
-    config1.required_dis()
+    # config1 = DMCConfig(Path(".streamlit/config.toml"))
+    # print(config1)
+    # config1.required_dis()
 
     os.environ.setdefault("DMC_NUMBER_QUIET_ZONE_MODULES", "10")
     os.environ.setdefault("DMC_REQUIRED_DATA_IDENTIFIERS", "T|V")
-    os.environ.setdefault("DMC_USE_FORMAT_ENVELOPE", "true")
+    os.environ.setdefault("DMC_USE_FORMAT_ENVELOPE", "false")
 
     keys = ["UseMessageEnvelope", "UseFormatEnvelope", "RectangularDMC", "NumberQuietZoneModules", "ExplainDataIdentifiers"]
-    out = get_environment_variables(keys, "DMC")
+    # out = get_environment_variables(keys, "DMC")
     config2 = DMCConfig()
     print(config2)
     config2.required_dis()
