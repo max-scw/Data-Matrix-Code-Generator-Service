@@ -24,14 +24,8 @@ jobs:
             type=ref,event=branch
             type=ref,event=tag
             type=schedule,pattern={{date 'YYYYMMDD'}}
-<<<<<<< HEAD
-            app
-            streamlit
-            v0.1.0
-=======
             latest
             v0.1.1
->>>>>>> main
             
       - name: Log in to the Container registry
         uses: docker/login-action@v2
