@@ -31,7 +31,7 @@ class DMCGenerator:
         return tuple(map(lambda i: factor * i, t1))
 
     def generate(self,
-                 n_quiet_zone_moduls: Union[int, None] = None,
+                 n_quiet_zone_modules: Union[int, None] = None,
                  rectangular_dmc: bool = False,
                  file_path: Union[str, Path, None] = None
                  ) -> Union[Image.Image, Path]:
@@ -51,7 +51,7 @@ class DMCGenerator:
                                               options=options
                                               ).convert('1')
         # add quiet zone for final image of the code
-        img = self.add_quiet_zone(dmc_image, n_quiet_zone_moduls)
+        img = self.add_quiet_zone(dmc_image, n_quiet_zone_modules)
 
         if file_path is None:
             return img
@@ -118,11 +118,11 @@ class DMCGenerator:
 
         return modul_size
 
-    def add_quiet_zone(self, img: Image.Image, n_quiet_zone_moduls: int = 2) -> Image.Image:
+    def add_quiet_zone(self, img: Image.Image, n_quiet_zone_modules: int = 2) -> Image.Image:
         # add quiet zone (pad image)
-        if n_quiet_zone_moduls:
+        if n_quiet_zone_modules:
             # size in pt
-            sz_quiet_zone = int(n_quiet_zone_moduls * self.modul_size_pt)
+            sz_quiet_zone = int(n_quiet_zone_modules * self.modul_size_pt)
             # create empty, larger image
             quiet_zone_size = (sz_quiet_zone, sz_quiet_zone)
             new_image_size = self.tuple_add(img.size, self.tuple_multiply(quiet_zone_size, 2))
