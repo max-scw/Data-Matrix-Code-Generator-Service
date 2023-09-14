@@ -51,6 +51,10 @@ COPY DataMatrixCode/ ./DataMatrixCode/
 COPY app-main.py utils.py README.md LICENSE ./
 COPY .streamlit/config_default.toml .streamlit/config.toml
 
+USER root
+RUN chown -R appuser:appuser /home/appuser
+USER appuser
+
 # Expose the ports
 EXPOSE 8501
 
