@@ -1,7 +1,8 @@
 import os
 import re
 
-from pip._vendor import tomli as tomllib  # standard in Python 3.11
+from pip._vendor import tomli as tomli_r  # standard in Python 3.11
+import tomli_w
 from pathlib import Path
 from itertools import chain
 
@@ -36,6 +37,14 @@ def cast(var: str) -> Union[None, int, float, str, bool]:
     elif re.match(r"(True)|(False)$", var, re.IGNORECASE):
         var = True if var[0].lower() == "t" else False
     return var
+
+
+def read_toml(path_to_file: Path) -> dict:
+    with open(path_to_file, "r") as fid:
+        text = fid.read()
+        # Docker doesn't like tomllib to read from binary data...
+        info = tomli_r.loads(text)
+    return info
 
 
 class DMCConfig:
@@ -97,11 +106,7 @@ class DMCConfig:
             return dict()
         # read file
         print(f"DEBUG: DMCConfig()._read_config(): path_to_file={path_to_file.as_posix()}")
-        with open(path_to_file, "r") as fid:
-            text = fid.read()
-        # Docker doesn't like tomllib to read from binary data...
-        info = tomllib.loads(text)
-        return info
+        return read_toml(path_to_file)
 
     def required_dis(self, flatten: bool = False) -> Union[List[List[str]], list]:
         key = "requiredDataIdentifiers"
@@ -156,6 +161,40 @@ class DMCConfig:
             return self._default[key]
         else:
             raise ValueError(f"Unknown key '{key}' for configuration and default parameters.")
+
+
+def create_streamlit_config(path_to_config: Union[str, Path] = ".streamlit/config.toml") -> bool:
+    """
+    Looks for specified environment variables that define the streamlit config.
+    Creates a config file if it finds settings.
+    """
+    # define options to look for
+    options = {"theme": ["base", "primaryColor"],
+               "browser": ["gatherUsageStats"]
+               }
+
+    # TODO: read file with default values first
+    path_to_config = Path(path_to_config)
+    if path_to_config.exists() and path_to_config.is_file():
+        settings = read_toml(path_to_config)
+    
+    # read environment variables
+    for opt in options:
+        # get settings from environment
+        envs = get_environment_variables(options[opt], "STREAMLIT")
+
+        # merge environment and file variables
+        config = settings[opt] | envs if opt in settings else envs
+        # save merged config
+        if envs:
+            settings[opt] = config
+    
+    # replace config file with new, merged config
+    if settings:
+        # TODO: make sure to replace the file (not just append)
+        with open(path_to_config, "wb+") as fid:
+            tomli_w.dump(settings, fid)
+    return True
 
 
 if __name__ == "__main__":

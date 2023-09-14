@@ -12,7 +12,7 @@ from DataMatrixCode import (
     validate_envelope_format
 )
 
-from utils import DMCConfig
+from utils import DMCConfig, create_streamlit_config
 
 from typing import Dict, Union, List, Any
 
@@ -63,7 +63,7 @@ def draw_input_rows(config: DMCConfig) -> bool:
     if "rows" not in st.session_state:
         st.session_state.rows = Row(config)
 
-    print(f"DEBUG draw_input_rows(): st.session_state.rows.rows={st.session_state.rows.rows}")
+    # print(f"DEBUG draw_input_rows(): st.session_state.rows.rows={st.session_state.rows.rows}")
 
     flag_valid = False
 
@@ -210,8 +210,8 @@ def initialize_options(config: DMCConfig):
     if "use_rectangular" not in st.session_state:
         st.session_state.use_rectangular = config["RectangularDMC"]
 
-    if "n_quiet_zone_moduls" not in st.session_state:
-        st.session_state.n_quiet_zone_moduls = config["NumberQuietZoneModules"]
+    if "n_quiet_zone_modules" not in st.session_state:
+        st.session_state.n_quiet_zone_modules = config["NumberQuietZoneModules"]
 
     if "options_expanded" not in st.session_state:
         st.session_state.options_expanded = False
@@ -248,13 +248,13 @@ def draw_options():
                                                            value=st.session_state.use_rectangular,
                                                            help="Should a rectangular DMC be generated?"
                                                            )
-            st.session_state.n_quiet_zone_moduls = st.number_input(r"\# moduls for quiet zone",
-                                                                   label_visibility="visible",
-                                                                   min_value=0,
-                                                                   max_value=10,
-                                                                   value=st.session_state.n_quiet_zone_moduls,
-                                                                   help="Number of empty (white) moduls that frame the DMC",
-                                                                   )
+            st.session_state.n_quiet_zone_modules = st.number_input(r"\# moduls for quiet zone",
+                                                                    label_visibility="visible",
+                                                                    min_value=0,
+                                                                    max_value=10,
+                                                                    value=st.session_state.n_quiet_zone_modules,
+                                                                    help="Number of empty (white) moduls that frame the DMC",
+                                                                    )
 
 
 def draw_results(img, message_string: str, n_ascii_characters: int):
@@ -349,7 +349,7 @@ def main(prefix: str = "DMC"):
                     data={FORMAT_ANSI_MH_10: message_fields}, 
                     use_message_envelope=st.session_state.use_message_envelope,
                     use_format_envelope=st.session_state.use_format_envelope,
-                    n_quiet_zone_moduls=st.session_state.n_quiet_zone_moduls,
+                    n_quiet_zone_modules=st.session_state.n_quiet_zone_modules,
                     rectangular_dmc=st.session_state.use_rectangular
                     )
                 dmc.get_message()
@@ -372,5 +372,9 @@ def main(prefix: str = "DMC"):
 
 
 if __name__ == "__main__":
+
+    # get streamlit options to create a local config file
+    create_streamlit_config()
+
     main("DMC")
     # streamlit run app-main.py

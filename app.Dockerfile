@@ -49,7 +49,7 @@ WORKDIR /home/appuser/source
 # Copy the app to the container
 COPY DataMatrixCode/ ./DataMatrixCode/
 COPY app-main.py utils.py README.md LICENSE ./
-# COPY .streamlit/config.toml .streamlit/config.toml
+COPY .streamlit/config_default.toml .streamlit/config.toml
 
 # Expose the ports
 EXPOSE 8501
