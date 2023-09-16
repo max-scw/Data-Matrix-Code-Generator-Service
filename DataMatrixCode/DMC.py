@@ -40,7 +40,9 @@ class DataMatrixCode:
                         envelopes[fmt][ky] = val
                 else:
                     envelopes[fmt] = flds
+        # print(f"DEBUG DataMatrixCode._process_messages(): envelopes={envelopes}")
         valid_content, _ = validate_envelope_format(envelopes)
+        # print(f"DEBUG DataMatrixCode._process_messages(): valid_content={valid_content}")
         return valid_content
 
     def get_message(self) -> str:
@@ -78,6 +80,8 @@ class DataMatrixCode:
 
 def validate_envelope_format(envelopes: dict) -> (dict, bool):
     def _fields_to_message(fields: dict) -> List[str]:
+
+        # datetime(2022,12,23).strftime(format=easy_datetime_format_converter("DDMMYYYY"))
         return [f"{ky}{val}" for ky, val in fields.items()]
 
     format_not_valid = False

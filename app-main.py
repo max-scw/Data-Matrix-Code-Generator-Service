@@ -342,7 +342,8 @@ def main(prefix: str = "DMC"):
         rows = st.session_state.rows
         # check if no required field is empty
         if not rows.isempty:
-            message_fields = rows.message_fields 
+            message_fields = rows.message_fields
+            print(f"DEBUG message_fields={message_fields}")
             # generate data-matrix-code
             with st.spinner(text="generating Data-Matrix-Code ..."):
                 dmc = DataMatrixCode(
