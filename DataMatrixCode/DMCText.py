@@ -72,6 +72,54 @@ class DMCMessageParser:
         return info
 
 
+def easy_datetime_format_converter(simplified_format: str) -> str:
+    mapping = {
+        "YYYY": "%Y",  # Year with century as a decimal number.
+        "YY": "%y",  # Year without century as a zero-padded decimal number.
+        # "Y": "",  
+        "MM": "%m",  # Month as a zero-padded decimal number.
+        "MMM": "%b",  # Month as locale’s abbreviated name.
+        "DDD": "%a",  # Weekday as locale’s abbreviated name. (TODO: ensure EN)
+        "DD": "%d",  # Day of the month as a zero-padded decimal number.
+        "hh": "%H",  # Hour (24-hour clock) as a zero-padded decimal number.
+        "mm": "%M",  # Minute as a zero-padded decimal number.
+        "ss": "%S",  # Second as a zero-padded decimal number.
+        "ff": "%f",  # Microsecond as a decimal number, zero-padded to 6 digits.
+        "WW": "%W",  # Week number of the year (Monday as the first day of the week) as a zero-padded decimal number. All days in a new year preceding the first Monday are considered to be in week 0.
+        "TTTT": "%H%M"  #??? 22D Record Date Time Stamp (YYYYMMDDTTTT) where T equals hour and minutes
+        }
+    # locale.setlocale(locale.LC_TIME, "en_US")
+
+    datetime_format = ""
+    for el in split_repeating_elements(simplified_format):
+        if el in mapping:
+            datetime_format += mapping[el]
+        else:
+            raise Exception(f"Format element {el} unknown.")
+    return datetime_format
+
+
+def split_repeating_elements(string: str) -> List[str]:
+    sections = []
+
+    if len(string) > 1:
+        sct = string[0]
+        for el in string[1:]:
+            if el in sct:
+                sct += el
+            else:
+                sections.append(sct)
+                sct = el
+        sections.append(sct)
+    return sections
+
+
+def get_date_format(explanation: str):        
+    # regex pattern
+    pattern = r"(?<=[\s\(\[])[YMDHTymdhsfpo\[\]]{4,23}(?=[\s\)\]\.])"
+    return re.search(pattern, explanation)
+
+
 class FormatParser:
     def __init__(self, di_format: str, fields: List[str], strict: bool = True, verbose: bool = False) -> None:
         msg_formats = message_formats(di_format)
@@ -83,7 +131,7 @@ class FormatParser:
         self.strict = strict
         self.verbose = verbose
 
-    def check_text(self, di: str, text: str, cast: bool = True) -> (bool, Union[str, int]):  # TODO: also date time?
+    def check_text(self, di: str, text: str, cast: bool = True) -> (bool, Union[str, int]):
         valid_code = True
         # verify di (that exists)
         if di not in self.di_mapping:
@@ -108,14 +156,15 @@ class FormatParser:
         return valid_code, text
 
     def _cast_text(self, di: str, text: str) -> Union[str, int, float, datetime]:
-        if "D" in di:  # datetime
-            # search for datetime format in explanations
+        if di[-1] == "D":  # datetime
+            # extract date format from explanation
             explanation = self.di_mapping[di]["Explanation"]
-            m = re.search(r"(?<=[\s\(\[])[YMDHymdhsfpo\[\]]{4,23}(?=[\s\)\]\.])", explanation)
+            m = get_date_format(explanation)
             if m:
                 # get format
                 datetime_format = m.group()
-                text = self.__to_datetime_by_format(text, datetime_format)
+                # text = self.__to_datetime_by_format(text, datetime_format)
+                text = datetime.strptime(text, easy_datetime_format_converter(datetime_format))
             else:
                 msg = f"No datetime format found in description of data identifier '{di}'."
                 rais_error_or_warning(msg, self.strict, self.verbose)
@@ -148,7 +197,8 @@ class FormatParser:
                 k += 1
                 i_last = i
         date_info.append(int(text[i_last:] if upwards else text[:i_last + 1]))
-
+        print(f"DEBUG FormatParser.__to_datetime_by_format(): date_info={date_info}, datetime_format={datetime_format}")
+        
         # to datetime object
         try:
             datetime_object = datetime(*date_info)
@@ -167,13 +217,15 @@ class FormatParser:
             if m:
                 # extract data identifier and corresponding text
                 di = str(m.group())
-                text = str(m.string[m.end():])
+                text_ogl = str(m.string[m.end():])
                 # check if the text meets the specified format
-                valid_code_id, text = self.check_text(di, text, cast=cast)
+                valid_code_id, text = self.check_text(di, text_ogl, cast=cast)
                 # update overall flag for valid code
                 valid_code_overall = valid_code_overall and valid_code_id
                 # info.append((di, text, valid_code_id))
-                info.append({"data_identifier": di, "content": text, "code_valid": valid_code_id})
+                element = {"data_identifier": di, "content": text, "code_valid": valid_code_id, "string": text_ogl}
+                print(f"DEBUG FormatParser.parse(): element={element}")
+                info.append(element)
             else:
                 msg = f"No {self.di_format} data identifier found in '{fld}'. " \
                       f"It was expected that the string starts with the pattern '{self.di_pattern}'."
@@ -198,10 +250,11 @@ def put_into_message_envelope(message: str) -> str:
 class DMCMessageBuilder:
     __dmc_string = None
 
-    def __init__(self,
-                 message_fields: Union[Dict[str, Any], List[str], List[str], str] = None,
-                 message_format: str = FORMAT_ANSI_MH_10
-                 ) -> None:
+    def __init__(
+            self,
+            message_fields: Union[Dict[str, Any], List[str], List[str], str] = None,
+            message_format: str = FORMAT_ANSI_MH_10
+            ) -> None:
         self.message_format = message_formats(message_format)
         self.message = self._join_message_fields(message_fields) if message_fields else ""
 
@@ -223,8 +276,22 @@ class DMCMessageBuilder:
 
     def _join_message_fields(self, message_fields) -> str:
         if isinstance(message_fields, dict):
-            message_fields = [f"{ky}{val}" for ky, val in message_fields.items()]
-        return self.fmt_sep.join(message_fields)
+            message = []
+            for ky, val in message_fields.items():
+                if isinstance(val, datetime):
+                    assert ky[-1] == "D", f"Data identifeir '{ky}' is no date identifier."
+                    # get explanation
+                    explanation = self.message_format.get_di_mapping()[ky]["Explanation"]
+                    # extract format from explanation
+                    m = get_date_format(explanation)
+                    if m:
+                        simplified_format = m.group()
+                    else:
+                        raise Exception(f"Could not extract a date format from the explanation of '{ky}'.")
+                    datetime_format = easy_datetime_format_converter(simplified_format)
+                    val = val.strftime(format=datetime_format)
+                message.append(f"{ky}{val}" )
+        return self.fmt_sep.join(message)
 
     def put_into_format_envelope(self) -> str:
         message = self.fmt_head + self.message + self.fmt_tail
@@ -271,7 +338,7 @@ def count_compressed_ascii_characters(msg: str) -> int:
 
 
 if __name__ == "__main__":
-    dmc_text = "[)>\x1eS123456\x1dV123H48999\x1d18D202312011155\x1d15D24121990\x04"
+    dmc_text = "[)>\x1eS123456\x1dV123H48999\x1d18D202312011155\x1d15D24121990\x1dD230501\x04"
 
     DMCMessageParser(dmc_text).get_content_of_message_envelope()
     tmp = DMCMessageParser(dmc_text).get_content(default_format=FORMAT_ANSI_MH_10)
@@ -283,4 +350,4 @@ if __name__ == "__main__":
     segments, flag_valid = FormatParser(di_format_in, fields_in, strict=False, verbose=True).parse(True)
     print(segments)
 
-    message_string = DMCMessageBuilder(message_fields="TEST")
+    message_string = DMCMessageBuilder(message_fields="TEST").get_message_string()
