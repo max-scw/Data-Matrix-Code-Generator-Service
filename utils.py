@@ -21,7 +21,11 @@ def get_environment_variables(camel_case_keys: List[str], prefix: str) -> Dict[s
         name = (f"{prefix}_" + "_".join(camel_case_split(ky))).upper()
         val = os.environ.get(name)
         if val is not None:
-            environment_config[ky] = cast(val.strip('"').strip("'"))
+            # strip quotation marks
+            if re.match('\".*\"$', val) or re.match("'.*'$", val):
+                val = val[1:-1]
+            # type cast
+            environment_config[ky] = cast(val)
     return environment_config
 
 
