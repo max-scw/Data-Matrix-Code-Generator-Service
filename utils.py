@@ -15,6 +15,10 @@ def camel_case_split(identifier):
 
 
 def get_environment_variables(camel_case_keys: List[str], prefix: str) -> Dict[str, Any]:
+    # regex patterns
+    pattern_double_quotes = re.compile('\".*\"$')
+    pattern_single_quotes = re.compile("'.*'$")
+
     environment_config = dict()
     for ky in camel_case_keys:
         # build name of environment variable
@@ -22,7 +26,7 @@ def get_environment_variables(camel_case_keys: List[str], prefix: str) -> Dict[s
         val = os.environ.get(name)
         if val is not None:
             # strip quotation marks
-            if re.match('\".*\"$', val) or re.match("'.*'$", val):
+            if pattern_double_quotes.match(val) or pattern_single_quotes.match(val):
                 val = val[1:-1]
             # type cast
             environment_config[ky] = cast(val)
@@ -125,9 +129,9 @@ class DMCConfig:
             # add optional data identifiers
             pat_opt = rf"({pat_di}(\|{pat_di})*)"
             # make list
-            pat_list = rf"\[{pat_opt}(,\s?{pat_opt})*\]$"
+            pat_list = re.compile(rf"\[{pat_opt}(,\s?{pat_opt})*\]$")
 
-            if isinstance(dis, str) and re.match(pat_list, dis):
+            if isinstance(dis, str) and pat_list.match(dis):
                 dis = re.split(r",\s?", dis[1:-1])
 
             if isinstance(dis, str):

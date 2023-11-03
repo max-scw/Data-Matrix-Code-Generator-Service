@@ -5,34 +5,42 @@ def build_format_pattern(format_string: str, match_entire_string: bool = True) -
     # break string into segments
     string_segments = re.findall(r'(?:[^\+\"\']|\"[^\"]*\"|\'[^\']*\')+', format_string)
 
+    pattern_integer = re.compile(r"\d+")
+    pattern_max_number = re.compile(r"(?<=\d\.\.\.)\d+")
+    # an: str.isalnum() "[^0-9a-zA-Z]+"
+    # a: strisalpha()  "[a-zA-Z]+"
+    # n: str.isnumeric() "\d+(\.\d+)?"
+    # else: str.isascii()
+    # cases: a, n, an, explicit character sequence: ""
+    pattern_alphanum_patterns = re.compile(r'".*"')
+    pattern_alphanum = re.compile(r"an\d?")
+    pattern_characters = re.compile(r"a\d?")
+    pattern_numbers = re.compile(r"n\d?")
+
     pattern = ""
     for seg in string_segments:
         # extract minimal number of characters
         num_min = 0
-        m = re.search(r"\d+", seg)
+        m = pattern_integer.search(seg)
         if m:
             num_min = int(m.group())
 
         # extract maximum number of characters
         num_max = num_min if num_min > 0 else 9999
-        m = re.search(r"(?<=\d\.\.\.)\d+", seg)
+        m = pattern_max_number.search(seg)
         if m:
             num_max = int(m.group())
 
-        # an: str.isalnum() "[^0-9a-zA-Z]+"
-        # a: str.isalpha()  "[a-zA-Z]+"
-        # n: str.isnumeric() "\d+(\.\d+)?"
-        # else: str.isascii()
-        # cases: a, n, an, explicit character sequence: ""
-        m = re.match(r'".*"', seg)
+
+        m = pattern_alphanum_patterns.match(seg)
         if m:
             character_pattern = re.escape(m.group()[1:-1])
             num_min, num_max = 1, 1
-        elif re.match(r"an\d?", seg):  # an: str.isalnum() "[^0-9a-zA-Z]+"
+        elif pattern_alphanum.match(seg):  # an: str.isalnum() "[^0-9a-zA-Z]+"
             character_pattern = r"[a-zA-Z0-9\.\-\+_]"
-        elif re.match(r"a\d?", seg):  # a: str.isalpha()  "[a-zA-Z]+"
+        elif pattern_characters.match(seg):  # a: str.isalpha()  "[a-zA-Z]+"
             character_pattern = "[a-zA-Z]"
-        elif re.match(r"n\d?", seg):  # n: str.isnumeric() "\d+(\.\d+)?"
+        elif pattern_numbers.match(seg):  # n: str.isnumeric() "\d+(\.\d+)?"
             character_pattern = r"[0-9\.]"
         else:
             raise ValueError(f"Unknown character specification {seg} in {format_string}. "
