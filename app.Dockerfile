@@ -49,7 +49,7 @@ WORKDIR /home/appuser/source
 # Copy the app to the container
 COPY DataMatrixCode/ ./DataMatrixCode/
 COPY app-main.py utils.py README.md LICENSE ./
-COPY .streamlit/config_default.toml .streamlit/config.toml
+#COPY .streamlit/config_default.toml .streamlit/config.toml
 
 USER root
 RUN chown -R appuser:appuser /home/appuser
@@ -58,6 +58,8 @@ USER appuser
 # Expose the ports
 EXPOSE 8501
 
+HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health
+
 # Start the app
-CMD ["streamlit", "run", "app-main.py"]
+ENTRYPOINT ["streamlit", "run", "app-main.py", "--server.port=8501", "--server.address=0.0.0.0"]
 #ENTRYPOINT ["tail", "-f", "/dev/null"]

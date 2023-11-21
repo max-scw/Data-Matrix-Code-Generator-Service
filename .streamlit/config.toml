@@ -6,7 +6,11 @@ primaryColor = "#2D4275"
 gatherUsageStats = false
 
 [DMC]
-requiredDataIdentifiers = ["P", "S|T", "V"]
+requiredDataIdentifiers = [
+    "P",
+    "S|T",
+    "V",
+]
 UseMessageEnvelope = true
 UseFormatEnvelope = true
 RectangularDMC = false

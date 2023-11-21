@@ -1,0 +1,18 @@
+
+services:
+  dmc-app:
+    image: dmc-generator/app
+    build:
+      context: .
+      dockerfile: app.Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8506:8501"
+    environment:
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=true
+      - STREAMLIT_PRIMARY_COLOR=#2D4275
+      - DMC_REQUIRED_DATA_IDENTIFIERS='["P", "S|T", "V"]'
+      - DMC_USE_MESSAGE_ENVELOPE=true
+      - DMC_USE_FORMAT_ENVELOPE=true
+      - DMC_RECTANGULAR_DMC=false
+      - DMC_NUMBEROF_QUIET_ZONE_MODULS=2

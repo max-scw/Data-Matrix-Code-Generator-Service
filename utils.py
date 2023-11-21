@@ -14,10 +14,13 @@ def camel_case_split(identifier):
     return [m.group(0) for m in matches]
 
 
+# regex patterns
+re_double_quotes = re.compile('\".*\"$')
+re_single_quotes = re.compile("'.*'$")
+re_list = re.compile("\[.+\]")
+
+
 def get_environment_variables(camel_case_keys: List[str], prefix: str) -> Dict[str, Any]:
-    # regex patterns
-    pattern_double_quotes = re.compile('\".*\"$')
-    pattern_single_quotes = re.compile("'.*'$")
 
     environment_config = dict()
     for ky in camel_case_keys:
@@ -26,10 +29,14 @@ def get_environment_variables(camel_case_keys: List[str], prefix: str) -> Dict[s
         val = os.environ.get(name)
         if val is not None:
             # strip quotation marks
-            if pattern_double_quotes.match(val) or pattern_single_quotes.match(val):
+            if re_double_quotes.match(val) or re_single_quotes.match(val):
                 val = val[1:-1]
+            # check if it is a list
+            if re_list.match(val):
+                val = val[1:-1].replace(" ", "").split(",")
+
             # type cast
-            environment_config[ky] = cast(val)
+            environment_config[ky] = [cast(el) for el in val] if isinstance(val, list)  else cast(val)
     return environment_config
 
 
@@ -78,7 +85,7 @@ class DMCConfig:
         "Text": None
         }
 
-    def __init__(self, path_to_file: Union[str, Path] = None, prefix: str = "DMC"):
+    def __init__(self, path_to_file: Union[str, Path, None] = None, prefix: str = "DMC"):
         # store input
         self.__path_to_file = path_to_file
         self.__prefix = prefix
@@ -93,6 +100,7 @@ class DMCConfig:
         config_env = get_environment_variables(list(self._default.keys()), prefix)
 
         self.config = config_env | config
+        print(f"DEBUG [DMCConfig.__init__]: config_env={config_env}, config={config} => self.config={self.config}")
 
     def __getitem__(self, key: str):
         return self.get_default_values(key)
@@ -177,14 +185,19 @@ def create_streamlit_config(path_to_config: Union[str, Path] = ".streamlit/confi
     Creates a config file if it finds settings.
     """
     # define options to look for
-    options = {"theme": ["base", "primaryColor"],
-               "browser": ["gatherUsageStats"]
-               }
+    options = {
+        "theme": ["base", "primaryColor"],
+        "browser": ["gatherUsageStats"]
+    }
 
+    # FIXME: streamlit works natively with environment variables!
     # TODO: read file with default values first
     path_to_config = Path(path_to_config)
+    settings = dict()
     if path_to_config.exists() and path_to_config.is_file():
         settings = read_toml(path_to_config)
+    else:
+        path_to_config.parent.mkdir()
     
     # read environment variables
     for opt in options:
@@ -211,7 +224,7 @@ if __name__ == "__main__":
     # config1.required_dis()
 
     os.environ.setdefault("DMC_NUMBER_QUIET_ZONE_MODULES", "10")
-    os.environ.setdefault("DMC_REQUIRED_DATA_IDENTIFIERS", "T|V")
+    os.environ.setdefault("DMC_REQUIRED_DATA_IDENTIFIERS", '["P", "S|T", "V"]')
     os.environ.setdefault("DMC_USE_FORMAT_ENVELOPE", "false")
 
     keys = ["UseMessageEnvelope", "UseFormatEnvelope", "RectangularDMC", "NumberQuietZoneModules", "ExplainDataIdentifiers"]
