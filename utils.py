@@ -179,45 +179,6 @@ class DMCConfig:
             raise ValueError(f"Unknown key '{key}' for configuration and default parameters.")
 
 
-def create_streamlit_config(path_to_config: Union[str, Path] = ".streamlit/config.toml") -> bool:
-    """
-    Looks for specified environment variables that define the streamlit config.
-    Creates a config file if it finds settings.
-    """
-    # define options to look for
-    options = {
-        "theme": ["base", "primaryColor"],
-        "browser": ["gatherUsageStats"]
-    }
-
-    # FIXME: streamlit works natively with environment variables!
-    # TODO: read file with default values first
-    path_to_config = Path(path_to_config)
-    settings = dict()
-    if path_to_config.exists() and path_to_config.is_file():
-        settings = read_toml(path_to_config)
-    elif not path_to_config.parent.is_dir():
-        path_to_config.parent.mkdir()
-    
-    # read environment variables
-    for opt in options:
-        # get settings from environment
-        envs = get_environment_variables(options[opt], "STREAMLIT")
-
-        # merge environment and file variables
-        config = settings[opt] | envs if opt in settings else envs
-        # save merged config
-        if envs:
-            settings[opt] = config
-    
-    # replace config file with new, merged config
-    if settings:
-        # TODO: make sure to replace the file (not just append)
-        with open(path_to_config, "wb+") as fid:
-            tomli_w.dump(settings, fid)
-    return True
-
-
 if __name__ == "__main__":
     # config1 = DMCConfig(Path(".streamlit/config.toml"))
     # print(config1)

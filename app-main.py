@@ -12,7 +12,7 @@ from DataMatrixCode import (
     validate_envelope_format
 )
 
-from utils import DMCConfig, create_streamlit_config
+from utils import DMCConfig
 
 from typing import Dict, Union, List, Any
 
@@ -376,9 +376,5 @@ def main(prefix: str = "DMC"):
 
 
 if __name__ == "__main__":
-
-    # get streamlit options to create a local config file
-    create_streamlit_config() 
-
     main("DMC")
     # streamlit run app-main.py
