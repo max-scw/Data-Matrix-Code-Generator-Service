@@ -71,14 +71,17 @@ def draw_input_rows(config: DMCConfig) -> bool:
     select_options = list(FORMAT_MAPPING.keys())
     for i, fld in enumerate(st.session_state.rows):
         placeholder = st.empty()
-        col1, _, col2 = st.columns([1, 1, 4])
+        col1, col2 = st.columns([1, 4], gap="large")
         with col1:
             idx = 0
             if fld["di"] in select_options:
                 idx = select_options.index(fld["di"])
-            di = st.selectbox("Data Identifier", select_options,
-                              index=idx,
-                              key=fld["keys"][0])
+            di = st.selectbox(
+                "Data Identifier", 
+                select_options,
+                index=idx,
+                key=fld["keys"][0]
+            )
 
             # draw info message on change
             if st.session_state.explain_data_identifiers:
@@ -375,7 +378,7 @@ def main(prefix: str = "DMC"):
 if __name__ == "__main__":
 
     # get streamlit options to create a local config file
-    create_streamlit_config()
+    create_streamlit_config() 
 
     main("DMC")
     # streamlit run app-main.py

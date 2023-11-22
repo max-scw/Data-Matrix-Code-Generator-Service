@@ -36,7 +36,7 @@ def get_environment_variables(camel_case_keys: List[str], prefix: str) -> Dict[s
                 val = val[1:-1].replace(" ", "").split(",")
 
             # type cast
-            environment_config[ky] = [cast(el) for el in val] if isinstance(val, list)  else cast(val)
+            environment_config[ky] = [cast(el.strip("'").strip('"')) for el in val] if isinstance(val, list)  else cast(val)
     return environment_config
 
 
@@ -196,7 +196,7 @@ def create_streamlit_config(path_to_config: Union[str, Path] = ".streamlit/confi
     settings = dict()
     if path_to_config.exists() and path_to_config.is_file():
         settings = read_toml(path_to_config)
-    else:
+    elif not path_to_config.parent.is_dir():
         path_to_config.parent.mkdir()
     
     # read environment variables
