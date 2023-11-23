@@ -3,7 +3,7 @@ ENV PYTHONUNBUFFERED 1
 
 # Metadata
 LABEL author=SCW-MAX
-LABEL version=2023.08
+LABEL version=2023.11
 
 # Environment variables (default values)
 ENV LOGFILE=data-matrix-generator-streamlit

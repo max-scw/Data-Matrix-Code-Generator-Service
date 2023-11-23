@@ -98,9 +98,10 @@ NumberOfQuietZoneModuls = 2
 ExplainDataIdentifiers = true
 ````
 
-With regard to docker containers, one can set all configurations via environment variables. [Streamlit](https://streamlit.io/) uses upper snake case wirtings with the prefix `STREAMLIT_`, e.g. the keyword `primaryColor` in the `[browser]` section becomes `STREAMLIT_BRWOSER_PRIMARY_COLOR=#2D4275`.
+With regard to docker containers, one can set all configurations via environment variables. [Streamlit](https://docs.streamlit.io/library/advanced-features/configuration) uses upper snake case wirtings with the prefix `STREAMLIT_`, e.g. the keyword `primaryColor` in the `[browser]` section becomes `STREAMLIT_BRWOSER_PRIMARY_COLOR=#2D4275`.
 To configure the data matrix code, we follow this pattern using the prefix `DMC_` (and no sections.) I.e. use `DMC_NUMBEROF_QUIET_ZONE_MODULS=2` to specify the key `NumberOfQuietZoneModuls`.
 
+Find an exemplary [docker-compose.yaml](./docker-compose.yaml) in this repo.
 
 
 
@@ -127,6 +128,7 @@ If there is a way to replace ghostscript, I would be happy to publish the code u
 | 0.1.1 | bugfix initial release |
 | 0.2.0 | streamlit config via environment variables |
 | 0.2.1 | fix missing datetime handling |
+| 0.2.2 | DMC + streamlit config via environment variables (bugfix) |
 
 ## Status
 maintenance + minor feature development
