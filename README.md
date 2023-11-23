@@ -98,7 +98,8 @@ NumberOfQuietZoneModuls = 2
 ExplainDataIdentifiers = true
 ````
 
-
+With regard to docker containers, one can set all configurations via environment variables. [Streamlit](https://streamlit.io/) uses upper snake case wirtings with the prefix `STREAMLIT_`, e.g. the keyword `primaryColor` in the `[browser]` section becomes `STREAMLIT_BRWOSER_PRIMARY_COLOR=#2D4275`.
+To configure the data matrix code, we follow this pattern using the prefix `DMC_` (and no sections.) I.e. use `DMC_NUMBEROF_QUIET_ZONE_MODULS=2` to specify the key `NumberOfQuietZoneModuls`.
 
 
 
