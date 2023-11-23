@@ -122,8 +122,8 @@ The python library [treepeom](https://github.com/adamchainz/treepoem), which is 
 If there is a way to replace ghostscript, I would be happy to publish the code under a more liberal scheme.
 
 ## Release history
-| -- | -- |
 | Version | Description |
+| -- | -- |
 | 0.1.0 | initial release |
 | 0.1.1 | bugfix initial release |
 | 0.2.0 | streamlit config via environment variables |
