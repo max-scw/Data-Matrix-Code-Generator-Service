@@ -49,6 +49,8 @@ def _get_envelope(envelope: dict, key: str = None) -> Union[str, Dict[str, str]]
     
     
 class message_formats:
+    _di_format = None
+
     def __init__(self, di_format: str = None) -> None:
         if di_format:
             self.set_format(di_format)

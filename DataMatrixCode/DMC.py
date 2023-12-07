@@ -78,10 +78,12 @@ class DataMatrixCode:
             )
 
 
-def validate_envelope_format(envelopes: dict) -> (dict, bool):
+def validate_envelope_format(
+        envelopes: dict,
+        do_type_cast: bool = False,
+        keep_only_valid_fields: bool = True
+) -> (dict, bool):
     def _fields_to_message(fields: dict) -> List[str]:
-
-        # datetime(2022,12,23).strftime(format=easy_datetime_format_converter("DDMMYYYY"))
         return [f"{ky}{val}" for ky, val in fields.items()]
 
     format_not_valid = False
@@ -93,11 +95,14 @@ def validate_envelope_format(envelopes: dict) -> (dict, bool):
             messages = flds
         else:
             raise ValueError(f"Unexpected input type {type(flds)}.")
-        segments, segment_valid = FormatParser(fmt, messages, strict=False, verbose=False).parse(True)
+        segments, segment_valid = FormatParser(fmt, messages, strict=False, verbose=False).parse(do_type_cast)
         
         format_not_valid |= (not segment_valid)
         # keep only valid envelopes
-        valid_envelopes[fmt] = {el["data_identifier"]: el["content"] for el in segments if el["code_valid"]}
+        if keep_only_valid_fields:
+            valid_envelopes[fmt] = {el["data_identifier"]: el["content"] for el in segments if el["code_valid"]}
+        else:
+            valid_envelopes[fmt] = {el["data_identifier"]: el["content"] for el in segments}
 
     all_formats_valid = not format_not_valid
     return valid_envelopes, all_formats_valid
@@ -129,10 +134,9 @@ def generate_message_string(data: MessageData) -> str:
     return DataMatrixCode(data=fields, **args).get_message()
 
 
-def parse_dmc(text: str, check_format: bool = True) -> Dict[str, List[str]]:
+def parse_dmc(text: str, check_format: bool = True, do_type_cast: bool = False) -> Dict[str, List[str]]:
     content = DMCMessageParser(text).get_content()
-    if check_format:
-        content, _ = validate_envelope_format(content)
+    content, _ = validate_envelope_format(content, do_type_cast, check_format)
     return content
 
 

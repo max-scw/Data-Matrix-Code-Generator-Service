@@ -1,4 +1,5 @@
 import re
+import warnings
 
 from .utils import (
     validate_format,
@@ -28,27 +29,56 @@ class DMCMessageParser:
 
         m = re.match(pattern, self.text)
         if not m:
-            raise ValueError(f"No message envelope found in {self.text}. "
-                             f"(A message envelope is required according to ISO / IEC 15434.)")
+            raise Exception(
+                f"No message envelope found in {self.text}. "
+                f"(A message envelope is required according to ISO / IEC 15434.)"
+            )
         else:
             # strip envelop characters from text
             return self._strip_envelope_characters(message_formats().get_message_envelope(), m.group())
 
-    def get_content_of_format_envelopes(self) -> Union[Dict[str, List[str]], str]:
+    def get_content_of_format_envelopes(self) -> Union[Dict[str, str], str]:
         # extract format
         content = dict()
-        for nm, fmt in message_formats().get_formats():
-            # build envelope
-            pattern = self._build_envelope_pattern(fmt)
+        # there may be multiple format envelopes in one message envelope
+        message_envelope = message_formats().get_message_envelope()
+        pattern = self._build_envelope_pattern(message_envelope)
+        m = re.findall(pattern, self.text)
 
-            m = re.findall(pattern, self.text)
-            if m:
-                # strip envelop characters from text
-                content[fmt] = [self._strip_envelope_characters(fmt, el) for el in m]
+        messages: List[str] = []
+        if m:
+            if len(m) > 1:
+                raise Exception("Multiple message envelopes found but only one was expected!")
+            messages = [self._strip_envelope_characters(message_envelope, el) for el in m]
+
+        content = dict()
+        # for all messages
+        for msg in messages:
+            # loop over all formats
+            for fmt in message_formats().get_formats():
+                # build envelope
+                format_envelope = message_formats(fmt).get_envelope()
+                pattern = self._build_envelope_pattern(format_envelope)
+
+                m = re.findall(pattern, msg)
+                if m:
+                    if len(m) > 1:
+                        warnings.warn("The same format envelope was found multiple times in a message envelope.")
+                    # strip envelop characters from text
+                    text = "".join([self._strip_envelope_characters(format_envelope, el) for el in m])
+                else:
+                    text = msg  # FIXME: assuming ANSI-MH-10 format per default
+
+                if fmt in content:
+                    content[fmt] += text
+                else:
+                    content[fmt] = text
         return content
 
     def get_content(self, split_fields: bool = True, default_format: str = FORMAT_ANSI_MH_10) -> Dict[str, List[str]]:
         content = self.get_content_of_format_envelopes()
+        # dictionary of format envelopes of a single message (envelope)
+
         # add default format if no format envelope is specified
         if content == {}:
             if default_format:
@@ -62,9 +92,9 @@ class DMCMessageParser:
             return content
 
     @staticmethod
-    def _split_content(env: Dict[str, List[str]]) -> Dict[str, List[str]]:
+    def _split_content(envelopes: Dict[str, List[str]]) -> Dict[str, List[str]]:
         info = dict()
-        for fmt, val in env.items():
+        for fmt, val in envelopes.items():
             # get separator (as regex pattern)
             sep = re.escape(message_formats(fmt).get_envelope()["sep"])
             # split content
@@ -82,8 +112,10 @@ def easy_datetime_format_converter(simplified_format: str) -> str:
         "DDD": "%a",  # Weekday as locale’s abbreviated name. (TODO: ensure EN)
         "DD": "%d",  # Day of the month as a zero-padded decimal number.
         "hh": "%H",  # Hour (24-hour clock) as a zero-padded decimal number.
+        "HH": "%H",  # Hour (24-hour clock) as a zero-padded decimal number.
         "mm": "%M",  # Minute as a zero-padded decimal number.
         "ss": "%S",  # Second as a zero-padded decimal number.
+        "SS": "%S",  # Second as a zero-padded decimal number.
         "ff": "%f",  # Microsecond as a decimal number, zero-padded to 6 digits.
         "WW": "%W",  # Week number of the year (Monday as the first day of the week) as a zero-padded decimal number. All days in a new year preceding the first Monday are considered to be in week 0.
         "TTTT": "%H%M"  #??? 22D Record Date Time Stamp (YYYYMMDDTTTT) where T equals hour and minutes
@@ -91,8 +123,14 @@ def easy_datetime_format_converter(simplified_format: str) -> str:
     # locale.setlocale(locale.LC_TIME, "en_US")
 
     datetime_format = ""
-    for el in split_repeating_elements(simplified_format):
+    format_elements = split_repeating_elements(simplified_format)
+    for i, el in enumerate(format_elements):
         if el in mapping:
+            if el == "MM":
+                if (i > 0 and format_elements[i - 1][0] == "H") or \
+                        (i < len(format_elements) and format_elements[i + 1][0] == "H"):
+                    # inconsistent date format => it should have been "minute"
+                    el = "mm"  # temporary overwrite
             datetime_format += mapping[el]
         else:
             raise Exception(f"Format element {el} unknown.")
@@ -197,7 +235,7 @@ class FormatParser:
                 k += 1
                 i_last = i
         date_info.append(int(text[i_last:] if upwards else text[:i_last + 1]))
-        print(f"DEBUG FormatParser.__to_datetime_by_format(): date_info={date_info}, datetime_format={datetime_format}")
+        # print(f"DEBUG FormatParser.__to_datetime_by_format(): date_info={date_info}, datetime_format={datetime_format}")
         
         # to datetime object
         try:
@@ -224,7 +262,7 @@ class FormatParser:
                 valid_code_overall = valid_code_overall and valid_code_id
                 # info.append((di, text, valid_code_id))
                 element = {"data_identifier": di, "content": text, "code_valid": valid_code_id, "string": text_ogl}
-                print(f"DEBUG FormatParser.parse(): element={element}")
+                # print(f"DEBUG FormatParser.parse(): element={element}")
                 info.append(element)
             else:
                 msg = f"No {self.di_format} data identifier found in '{fld}'. " \
