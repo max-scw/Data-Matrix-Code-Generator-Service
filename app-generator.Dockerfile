@@ -58,9 +58,9 @@ USER appuser
 # Expose the ports
 EXPOSE 8501
 
-#HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health
-HEALTHCHECK CMD curl --fail -k https://localhost:8501/health
-# allow insecure connections if ssl is not configured
+# Define the health check using curl for both HTTP and HTTPS
+HEALTHCHECK --interval=30s --timeout=5s \
+  CMD (curl -fs http://localhost:8501/_stcore/health) || (curl -fs https://localhost:8501/_stcore/health) || exit 1
 
 
 # Start the app
