@@ -4,11 +4,10 @@ services:
     image: dmc-generator/app
     build:
       context: .
-      dockerfile: app.Dockerfile
+      dockerfile: app-generator.Dockerfile
     restart: unless-stopped
     ports:
       - "8506:8501"
-
     environment:
       - STREAMLIT_BROWSER_GATHER_USAGE_STATS=true
       - STREAMLIT_THEME_PRIMARY_COLOR=#2D4275
