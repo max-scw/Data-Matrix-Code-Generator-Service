@@ -60,8 +60,7 @@ EXPOSE 8501
 
 # Define the health check using curl for both HTTP and HTTPS
 HEALTHCHECK --interval=30s --timeout=5s \
-  CMD (curl -fs http://localhost:8501/_stcore/health) || (curl -fs https://localhost:8501/_stcore/health) || exit 1
-
+  CMD (curl -fsk http://localhost:8501/_stcore/health) || (curl -fsk https://localhost:8501/_stcore/health) || exit 1
 
 # Start the app
 ENTRYPOINT ["streamlit", "run", "app-generator.py", "--server.port=8501", "--server.address=0.0.0.0"]
