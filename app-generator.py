@@ -12,14 +12,20 @@ from DataMatrixCode import (
 from utils.utils import rstrip_non_ascii_characters
 from utils.config import DMCConfig
 from utils.utils_streamlit import config_page_head
-from utils.env_vars import get_env_variable, cast_logging_level
 
 
 from typing import Dict
 
+
 # global constants
 DI_FORMAT = FORMAT_ANSI_MH_10
-FORMAT_MAPPING = message_formats(DI_FORMAT).get_di_mapping()
+
+
+@st.cache_data
+def get_format_mapping():
+    return message_formats(DI_FORMAT).get_di_mapping()
+
+# FORMAT_MAPPING = get_format_mapping()
 # print(f"global: FORMAT_MAPPING={FORMAT_MAPPING.keys()}")
 
 
@@ -44,7 +50,7 @@ class Row:
 
     @property
     def description(self) -> str:
-        return FORMAT_MAPPING[self.selected_option]["Explanation"]
+        return get_format_mapping()[self.selected_option]["Explanation"]
 
 
 def create_row(options, row: Row):
@@ -110,7 +116,7 @@ def check_format(strict: bool = True) -> (Dict[str, str], bool):
 
             if not flag_valid:
                 msg = f"The value '{content}' for data identifier '{data_identifier}' does not comply with the format " \
-                      f"specifications: {FORMAT_MAPPING[data_identifier]['Meta Data']}.",
+                      f"specifications: {get_format_mapping()[data_identifier]['Meta Data']}.",
                 logging.warning(msg)
                 if strict:
                     st.error(msg, icon="🚨")
@@ -220,7 +226,7 @@ def main():
     initialize_options(config)
 
     # Initialize a list to store the dropdown options
-    options = list(FORMAT_MAPPING.keys())
+    options = list(get_format_mapping().keys())
 
     if "rows" not in st.session_state:
         st.session_state.rows = [Row()]
