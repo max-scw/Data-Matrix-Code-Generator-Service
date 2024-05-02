@@ -1,0 +1,15 @@
+[App]
+title="Data-Matrix-Code Generator Service"
+header=""
+subheader=""
+text=""
+strict=true
+options_expanded=false
+
+[DMC]
+use_message_envelope=true
+use_format_envelope=true
+rectangular_code=false
+number_quiet_zone_modules=2
+#explain_data_identifiers=True
+required_data_identifiers=""

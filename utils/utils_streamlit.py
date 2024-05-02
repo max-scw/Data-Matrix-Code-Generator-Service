@@ -1,11 +1,12 @@
 import streamlit as st
 from pathlib import Path
+import logging
 
-from utils import DMCConfig
+from utils.config import DMCConfig
 
 
-@st.cache_data
-def get_config(prefix: str) -> DMCConfig:
+# @st.cache_data
+def get_config() -> DMCConfig:
     # initialize / default path
     path_to_config = None
     # file name and potential paths
@@ -14,18 +15,17 @@ def get_config(prefix: str) -> DMCConfig:
     # check potential paths
     for p in potential_paths:
         path_to_config_ = Path(p) / file_name
-        print(f"DEBUG: path_to_config={path_to_config_.as_posix()}.exists(): {path_to_config_.exists()}")
+        logging.debug(f"path_to_config={path_to_config_.as_posix()}.exists(): {path_to_config_.exists()}")
         if path_to_config_.exists():
             path_to_config = path_to_config_
             break
 
     # read config file
-    return DMCConfig(path_to_config, prefix)
+    return DMCConfig(path_to_config)
 
 
 def config_page_head(
         page_title: str,
-        prefix_env_vars_config: str = "",
         page_icon: str = "💡",
 ):
     # configure page => set favicon and page title
@@ -41,13 +41,13 @@ def config_page_head(
     st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
     # Text
-    config = get_config(prefix_env_vars_config)
-    st.title(config["Title"])
+    config = get_config()
+    st.title(config["APP_TITLE"])
 
-    if config["Header"]:
-        st.header(config["Header"])
-    if config["Subheader"]:
-        st.subheader(config["Subheader"])
-    if config["Text"]:
-        st.write(config["Text"])
+    if config["APP_HEADER"]:
+        st.header(config["APP_HEADER"])
+    if config["APP_SUBHEADER"]:
+        st.subheader(config["APP_SUBHEADER"])
+    if config["APP_TEXT"]:
+        st.write(config["APP_TEXT"])
     return config
