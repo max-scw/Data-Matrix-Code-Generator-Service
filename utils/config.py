@@ -73,9 +73,10 @@ class DMCConfig:
     ):
         # store input
         self.__path_to_file = path_to_file
+        self.__default_config_file = Path(default_config_file)
 
         # load default config
-        default_config = Path(default_config_file)
+        default_config = self.__default_config_file
         if default_config.is_file():
             config_default = load_default_config(default_config)
         else:
@@ -90,6 +91,9 @@ class DMCConfig:
         self.config = config_default | config
         logging.debug(f"[DMCConfig.__init__]: config_default={config_default}, config={config} => self.config={self.config}")
 
+        # set required data identifiers:
+        self.required_dis = self.get_required_dis()
+
     def __getitem__(self, key: str):
         if key in self.config:
             return self.config[key]
@@ -102,13 +106,13 @@ class DMCConfig:
         init = []
         if self.__path_to_file:
             init.append(f"path_to_file={self.__path_to_file}")
-        init.append(f"prefix={self.__prefix}")
+        init.append(f"default_config_file={self.__default_config_file}")
 
         call = f"DMCConfig({', '.join(init)})"
         return f"{call}: {self.config}"
 
-    def required_dis(self, flatten: bool = False) -> Union[List[List[str]], list]:
-        key = "requiredDataIdentifiers"
+    def get_required_dis(self, flatten: bool = False) -> Union[List[List[str]], list]:
+        key = "DMC_REQUIRED_DATA_IDENTIFIERS"
         dis = []
         if self.config and key in self.config:
             # check for list
@@ -143,14 +147,14 @@ class DMCConfig:
 
         missing_dis = []
         # loop through required data identifiers
-        for dis in self.required_dis():
+        for dis in self.required_dis:
             # check if this (required) identifier is in the messages
             if not any([di in data_identifiers for di in dis]):
                 missing_dis.append(dis)
         return missing_dis
 
     def isrequireddi(self, data_identifier: str) -> list:
-        for dis in self.required_dis():
+        for dis in self.required_dis:
             if data_identifier in dis:
                 return dis
         return []
