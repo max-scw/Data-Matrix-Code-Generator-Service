@@ -27,7 +27,7 @@ def load_default_config(path_to_config: Union[str, Path]) -> dict:
     return config_default_env
 
 
-def get_config(default_prefix: str, default_config_file: str = "./default_config.toml") -> dict:
+def get_config_from_env_vars(default_prefix: str = "", default_config_file: str = "./default_config.toml") -> dict:
     # --- load default config
     default_config = Path(default_config_file)
     if default_config.is_file():
@@ -41,8 +41,7 @@ def get_config(default_prefix: str, default_config_file: str = "./default_config
 
     # merge configs
     config = config_default | config_environment_vars
-    logging.debug(f"get_config(): {config}")
-    print(config)
+    logging.debug(f"get_config_from_env_vars(): {config}")
 
     # set logging
     logging.basicConfig(
@@ -83,10 +82,7 @@ class DMCConfig:
             config_default = dict()
 
         # custom config
-        if path_to_file is None:
-            config = dict()
-        else:
-            config = get_config(path_to_file)
+        config = get_config_from_env_vars()
 
         self.config = config_default | config
         logging.debug(f"[DMCConfig.__init__]: config_default={config_default}, config={config} => self.config={self.config}")

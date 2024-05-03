@@ -142,7 +142,6 @@ def check_format(strict: bool = True) -> (Dict[str, str], bool):
 
 
 def check_required_data_identifiers(data_identifiers: List[str], config: DMCConfig) -> bool:
-    print(config.required_dis)
     # initialize return variable
     all_found = True
     # walk through required data identifiers
