@@ -47,7 +47,7 @@ class Row:
 
     @property
     def description(self) -> str:
-        return get_format_mapping()[self.selected_option]["Explanation"]
+        return get_format_mapping()[self.selected_option]["Explanation"] if self.selected_option else None
 
     @property
     def meta_data(self) -> str:
