@@ -49,7 +49,8 @@ WORKDIR /home/appuser/source
 
 # Copy the app to the container
 COPY DataMatrixCode/ ./DataMatrixCode/
-COPY app-generator.py utils.py utils_streamlit.py README.md LICENSE ./
+COPY utils/ ./utils
+COPY app-generator.py utils_streamlit.py README.md LICENSE ./
 
 USER root
 RUN chown -R appuser:appuser /home/appuser
