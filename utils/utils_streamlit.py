@@ -21,7 +21,7 @@ def get_config() -> DMCConfig:
             break
 
     # read config file
-    return DMCConfig(path_to_config)
+    return DMCConfig(path_to_config, "default_config.toml")
 
 
 def config_page_head(
@@ -42,6 +42,7 @@ def config_page_head(
 
     # Text
     config = get_config()
+
     st.title(config["APP_TITLE"])
 
     if config["APP_HEADER"]:

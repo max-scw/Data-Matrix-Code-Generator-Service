@@ -14,35 +14,36 @@ from typing import List, Dict, Any, Union
 
 
 def load_default_config(path_to_config: Union[str, Path]) -> dict:
-    with open(Path(path_to_config), "rb") as fid:
+    with open(Path(path_to_config), "r") as fid:
         config_default = tomllib.load(fid)
-    config_default_env = dict()
 
+    config_default_env = dict()
     for group in config_default:
         for ky, vl in config_default[group].items():
             # variable name
             var_nm = "_".join([group, ky]).upper()
             # nm = "_".join([prefix, var_nm]).upper()
-            config_default_env[var_nm] = vl if vl else None
+            config_default_env[var_nm] = vl if not (isinstance(vl, str) and vl == "") else None
+
     return config_default_env
 
 
-def get_config(default_prefix: str, default_config_file: str = "./default_config.toml") -> dict:
+def get_config(default_prefix: str, default_config_file: str = "default_config.toml") -> dict:
     # --- load default config
-    default_config = Path(default_config_file)
-    if default_config.is_file():
-        config_default = load_default_config(default_config)
+    path_to_default_config = Path(default_config_file)
+
+    if path_to_default_config.is_file():
+        config_default = load_default_config(path_to_default_config)
     else:
         config_default = dict()
 
     # get custom config
     prefix = get_env_variable("PREFIX", default_prefix)
     config_environment_vars = get_environment_variables(rf"{prefix}_" if prefix else "", False)
-
+    print(f"config_default={config_default} \nconfig_environment_vars={config_environment_vars}")
     # merge configs
     config = config_default | config_environment_vars
     logging.debug(f"get_config(): {config}")
-    print(config)
 
     # set logging
     logging.basicConfig(
@@ -69,27 +70,18 @@ class DMCConfig:
     def __init__(
             self,
             path_to_file: Union[str, Path, None] = None,
-            default_config_file: str = "./default_config.toml"
+            default_config_file: str = "default_config.toml"
     ):
         # store input
         self.__path_to_file = path_to_file
         self.__default_config_file = Path(default_config_file)
 
-        # load default config
-        default_config = self.__default_config_file
-        if default_config.is_file():
-            config_default = load_default_config(default_config)
-        else:
-            config_default = dict()
+        # load config
+        self.config = get_config(path_to_file, self.__default_config_file)
 
-        # custom config
-        if path_to_file is None:
-            config = dict()
-        else:
-            config = get_config(path_to_file)
 
-        self.config = config_default | config
-        logging.debug(f"[DMCConfig.__init__]: config_default={config_default}, config={config} => self.config={self.config}")
+        msg = f"[DMCConfig.__init__]: self.config={self.config}"
+        logging.debug(msg)
 
         # set required data identifiers:
         self.required_dis = self.get_required_dis()
@@ -99,7 +91,6 @@ class DMCConfig:
             return self.config[key]
         else:
             logging.debug(self.config)
-            print(self.config)
             raise ValueError(f"Unknown key '{key}' for configuration and default parameters.")
 
     def __repr__(self):
@@ -116,7 +107,7 @@ class DMCConfig:
         dis = []
         if self.config and key in self.config:
             # check for list
-            dis = self.config[key] if key in self.config else []
+            dis = self.config[key] if (key in self.config) and (self.config[key] is not None) else []
 
             # pattern data identifier
             pat_di = "([0-9]{0,2}[A-Z])"
