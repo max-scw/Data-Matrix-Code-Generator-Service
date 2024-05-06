@@ -1,11 +1,11 @@
 # syntax=docker/dockerfile:1
 
 # Base Image
-FROM python:3.9.16-alpine
+FROM python:3.11.9-alpine
 
 # Metadata
 LABEL author=SCW-MAX
-LABEL version=2023.08
+LABEL version=2024.05
 
 # Environment variables (default values)
 ENV LOGFILE=data-matrix-generator-fastapi
