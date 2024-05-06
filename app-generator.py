@@ -1,7 +1,6 @@
 import streamlit as st
 import uuid
 import binascii
-import pandas as pd
 import logging
 
 from DataMatrixCode import (
@@ -13,6 +12,7 @@ from DataMatrixCode import (
 from utils.utils import rstrip_non_ascii_characters
 from utils.config import DMCConfig
 from utils.utils_streamlit import config_page_head
+from utils.env_vars import set_env_variable
 
 
 from typing import Dict, List

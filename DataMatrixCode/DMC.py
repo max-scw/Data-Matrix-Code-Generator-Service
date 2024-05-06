@@ -40,9 +40,8 @@ class DataMatrixCode:
                         envelopes[fmt][ky] = val
                 else:
                     envelopes[fmt] = flds
-        # print(f"DEBUG DataMatrixCode._process_messages(): envelopes={envelopes}")
+
         valid_content, _ = validate_envelope_format(envelopes)
-        # print(f"DEBUG DataMatrixCode._process_messages(): valid_content={valid_content}")
         return valid_content
 
     def get_message(self) -> str:
@@ -52,7 +51,7 @@ class DataMatrixCode:
 
     def __get_message(self) -> str:
         envelopes = self._process_messages(self.data)
-        print(f"DEBUG: envelopes={envelopes}")
+
         # ensure that format envelopes are used if there are more than two (format) envelopes
         self.use_format_envelope |= (len(envelopes) > 1)
 
