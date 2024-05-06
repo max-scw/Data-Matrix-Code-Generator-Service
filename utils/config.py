@@ -4,9 +4,7 @@ import sys
 from itertools import chain
 import re
 
-# import tomllib
-from pip._vendor import tomli as tomllib  # standard in Python 3.11
-
+import tomllib
 
 from utils.env_vars import get_env_variable, get_environment_variables, cast_logging_level
 
@@ -14,7 +12,7 @@ from typing import List, Dict, Any, Union
 
 
 def load_default_config(path_to_config: Union[str, Path]) -> dict:
-    with open(Path(path_to_config), "r") as fid:
+    with open(Path(path_to_config), "rb") as fid:
         config_default = tomllib.load(fid)
 
     config_default_env = dict()

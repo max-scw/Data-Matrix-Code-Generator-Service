@@ -1,9 +1,9 @@
-FROM python:3.9.16-slim-bullseye
+FROM python:3.11.9-slim-bullseye
 ENV PYTHONUNBUFFERED 1
 
 # Metadata
 LABEL author=SCW-MAX
-LABEL version=2023.11
+LABEL version=2024.05
 
 # Environment variables (default values)
 ENV LOGFILE=data-matrix-generator-streamlit
