@@ -9,11 +9,6 @@ LABEL version=2024.05
 ENV LOGFILE=data-matrix-generator-streamlit
 
 
-RUN printf "deb https://deb.debian.org/debian bullseye main \
-    deb https://security.debian.org/debian-security bullseye-security main \
-    deb https://deb.debian.org/debian bullseye-updates main" > /etc/apt/sources.list
-
-
 # Install dependencies
 RUN apt update && \
     apt install -y apt-transport-https \
