@@ -81,6 +81,7 @@ def cast_logging_level(var: str, default: int = logging.INFO) -> int:
     else:
         return default
 
+
 def set_env_variable(key: str, val) -> bool:
     os.environ[key] = str(val)
     return True

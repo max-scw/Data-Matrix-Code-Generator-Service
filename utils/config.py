@@ -86,7 +86,6 @@ class DMCConfig:
 
         self.config = config_default | config
         logging.debug(f"[DMCConfig.__init__]: config_default={config_default}, config={config} => self.config={self.config}")
-
         # set required data identifiers:
         self.required_dis = self.get_required_dis()
 
@@ -95,7 +94,6 @@ class DMCConfig:
             return self.config[key]
         else:
             logging.debug(self.config)
-            print(self.config)
             raise ValueError(f"Unknown key '{key}' for configuration and default parameters.")
 
     def __repr__(self):
