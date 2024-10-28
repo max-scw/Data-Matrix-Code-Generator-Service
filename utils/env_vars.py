@@ -37,6 +37,12 @@ re_comma = re.compile(r"^(\".*\")|(\'.*\')$", re.ASCII)
 
 def cast(var: str) -> Union[None, int, float, str, bool]:
     """casting strings to primitive datatypes"""
+    # strip enclosing high comma
+    m = re_comma.match(var)
+    if m:
+        var = m.group()
+
+    # numeric data types
     if re_number.match(var):
         if re_integer.match(var):  # integer
             var = int(var)
@@ -51,9 +57,7 @@ def cast(var: str) -> Union[None, int, float, str, bool]:
             var = literal_eval(var)
         except:
             pass
-    elif re_comma.match(var):
-        # strip enclosing high comma
-        var = var.strip('"').strip('"')
+
     return var
 
 

@@ -271,7 +271,7 @@ def main():
             st.button(
                 label="reset",
                 type="secondary",
-                on_click=clear_rows,
+                on_click=lambda: clear_rows(config),
                 use_container_width=True,
                 help="Clear all rows.",
             )
